@@ -10,21 +10,33 @@ import { getMediaUrl } from "../../utils/media";
 import Pagination from "../ui/Pagination";
 import { useRouter } from "next/navigation";
 
-const FeaturedStories: React.FC = () => {
+interface FeaturedStoriesProps {
+  initialTextStories?: Story[];
+  initialAudioStories?: Story[];
+  initialTrendingStories?: Story[];
+  initialRecentStories?: Story[];
+}
+
+const FeaturedStories: React.FC<FeaturedStoriesProps> = ({
+  initialTextStories,
+  initialAudioStories,
+  initialTrendingStories,
+  initialRecentStories,
+}) => {
   const { t } = useLanguage();
   const router = useRouter();
 
   // Separate story states
-  const [textStories, setTextStories] = useState<Story[]>([]);
-  const [audioStories, setAudioStories] = useState<Story[]>([]);
-  const [trendingStories, setTrendingStories] = useState<Story[]>([]);
-  const [recentStories, setRecentStories] = useState<Story[]>([]);
+  const [textStories, setTextStories] = useState<Story[]>(initialTextStories || []);
+  const [audioStories, setAudioStories] = useState<Story[]>(initialAudioStories || []);
+  const [trendingStories, setTrendingStories] = useState<Story[]>(initialTrendingStories || []);
+  const [recentStories, setRecentStories] = useState<Story[]>(initialRecentStories || []);
 
   // Separate loading states
-  const [isLoadingText, setIsLoadingText] = useState(true);
-  const [isLoadingAudio, setIsLoadingAudio] = useState(true);
-  const [isLoadingTrending, setIsLoadingTrending] = useState(true);
-  const [isLoadingRecent, setIsLoadingRecent] = useState(true);
+  const [isLoadingText, setIsLoadingText] = useState(!initialTextStories || initialTextStories.length === 0);
+  const [isLoadingAudio, setIsLoadingAudio] = useState(!initialAudioStories || initialAudioStories.length === 0);
+  const [isLoadingTrending, setIsLoadingTrending] = useState(!initialTrendingStories || initialTrendingStories.length === 0);
+  const [isLoadingRecent, setIsLoadingRecent] = useState(!initialRecentStories || initialRecentStories.length === 0);
 
   // Separate pagination states
   const [textPagination, setTextPagination] = useState({
@@ -129,10 +141,10 @@ const FeaturedStories: React.FC = () => {
 
   // Initial load
   useEffect(() => {
-    fetchTextStories();
-    fetchAudioStories();
-    fetchTrendingStories();
-    fetchRecentStories();
+    if (!initialTextStories || initialTextStories.length === 0) fetchTextStories();
+    if (!initialAudioStories || initialAudioStories.length === 0) fetchAudioStories();
+    if (!initialTrendingStories || initialTrendingStories.length === 0) fetchTrendingStories();
+    if (!initialRecentStories || initialRecentStories.length === 0) fetchRecentStories();
   }, []);
 
   // Page change handlers - no auto scroll

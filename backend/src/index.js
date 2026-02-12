@@ -12,15 +12,15 @@ const prisma = new PrismaClient();
 app.use(
   helmet({
     crossOriginResourcePolicy: { policy: "cross-origin" },
-  })
+  }),
 );
 
 // CORS
 app.use(
   cors({
-    origin: config.corsOrigin || "*",
+    origin: "*",
     credentials: true,
-  })
+  }),
 );
 
 // Rate limiting
@@ -58,6 +58,7 @@ app.use("/api/admin", require("./routes/admin"));
 app.use("/api/media", require("./routes/media"));
 app.use("/api/contact", require("./routes/contact"));
 app.use("/api/affiliate", require("./routes/affiliate"));
+app.use("/api/film-reviews", require("./routes/filmReviews"));
 
 // Affiliate redirect (short URL)
 app.use("/r", require("./routes/affiliate"));

@@ -22,6 +22,11 @@ const nextConfig = {
         pathname: "/uploads/**",
       },
       {
+        protocol: "http",
+        hostname: "nginx",
+        pathname: "/uploads/**",
+      },
+      {
         protocol: "https",
         hostname: "**",
         pathname: "/uploads/**",

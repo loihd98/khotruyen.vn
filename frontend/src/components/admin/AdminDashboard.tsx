@@ -15,6 +15,8 @@ import AdminCommentManager from "./AdminCommentManager";
 import MediaManager from "./MediaManager";
 import AdminSystemSettings from "./AdminSystemSettings";
 import AdminGenresManager from "./AdminGenresManager";
+import AdminFilmReviewManager from "./AdminFilmReviewManager";
+import AdminFilmCategoriesManager from "./AdminFilmCategoriesManager";
 import AdminSidebar from "./AdminSidebar";
 import { AdminTab } from "../../types/admin";
 
@@ -114,6 +116,10 @@ const AdminDashboard: React.FC = () => {
         return <MediaManager />;
       case "settings":
         return <AdminSystemSettings />;
+      case "film-reviews":
+        return <AdminFilmReviewManager />;
+      case "film-categories":
+        return <AdminFilmCategoriesManager />;
       default:
         return <AdminStats />;
     }

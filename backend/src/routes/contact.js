@@ -87,7 +87,7 @@ router.post("/", contactLimiter, async (req, res) => {
     const adminEmailHtml = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <h2 style="color: #333; border-bottom: 2px solid #007bff; padding-bottom: 10px;">
-          Tin nhắn mới từ khotruyen.vn Contact Form
+          Tin nhắn mới từ vivutruyenhay.com Contact Form
         </h2>
         
         <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
@@ -99,7 +99,7 @@ router.post("/", contactLimiter, async (req, res) => {
           }</p>
           <p><strong>Tiêu đề:</strong> ${subject}</p>
           <p><strong>Thời gian:</strong> ${new Date().toLocaleString(
-            "vi-VN"
+            "vi-VN",
           )}</p>
         </div>
         
@@ -120,7 +120,7 @@ router.post("/", contactLimiter, async (req, res) => {
     const userEmailHtml = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <h2 style="color: #007bff; border-bottom: 2px solid #007bff; padding-bottom: 10px;">
-          Cảm ơn bạn đã liên hệ với khotruyen.vn
+          Cảm ơn bạn đã liên hệ với vivutruyenhay.com
         </h2>
         
         <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
@@ -138,7 +138,7 @@ router.post("/", contactLimiter, async (req, res) => {
             categoryLabels[category] || category
           }</p>
           <p><strong>Thời gian gửi:</strong> ${new Date().toLocaleString(
-            "vi-VN"
+            "vi-VN",
           )}</p>
           <hr style="border: none; border-top: 1px solid #dee2e6; margin: 15px 0;">
           <p style="line-height: 1.6; white-space: pre-wrap;"><strong>Nội dung:</strong><br>${message}</p>
@@ -153,7 +153,7 @@ router.post("/", contactLimiter, async (req, res) => {
         <div style="text-align: center; margin: 30px 0;">
           <p style="color: #666; font-size: 14px;">
             Trân trọng,<br>
-            <strong>Đội ngũ khotruyen.vn</strong>
+            <strong>Đội ngũ vivutruyenhay.com</strong>
           </p>
         </div>
       </div>
@@ -164,13 +164,13 @@ router.post("/", contactLimiter, async (req, res) => {
       from: `"${name}" <${process.env.SMTP_USER}>`,
       to: process.env.ADMIN_EMAIL || process.env.SMTP_USER,
       replyTo: email,
-      subject: `[khotruyen.vn Contact] ${subject}`,
+      subject: `[vivutruyenhay.com Contact] ${subject}`,
       html: adminEmailHtml,
     };
 
     // Send confirmation email to user
     const userMailOptions = {
-      from: `"khotruyen.vn Support" <${process.env.SMTP_USER}>`,
+      from: `"vivutruyenhay.com Support" <${process.env.SMTP_USER}>`,
       to: email,
       subject: `Xác nhận tin nhắn: ${subject}`,
       html: userEmailHtml,

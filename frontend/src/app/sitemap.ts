@@ -1,7 +1,50 @@
 import { MetadataRoute } from "next";
 
+const API_BASE_URL =
+  process.env.API_URL ||
+  process.env.NEXT_PUBLIC_API_URL ||
+  "http://localhost:5000/api";
+
+async function fetchAllStorySlugs(): Promise<
+  Array<{ slug: string; updatedAt: string }>
+> {
+  try {
+    const res = await fetch(
+      `${API_BASE_URL}/stories?limit=1000&status=PUBLISHED`,
+      { next: { revalidate: 3600 } },
+    );
+    if (!res.ok) return [];
+    const data = await res.json();
+    return (data.data || []).map((s: any) => ({
+      slug: s.slug,
+      updatedAt: s.updatedAt,
+    }));
+  } catch {
+    return [];
+  }
+}
+
+async function fetchAllFilmReviewSlugs(): Promise<
+  Array<{ slug: string; updatedAt: string }>
+> {
+  try {
+    const res = await fetch(`${API_BASE_URL}/film-reviews?limit=1000`, {
+      next: { revalidate: 3600 },
+    });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return (data.data || []).map((r: any) => ({
+      slug: r.slug,
+      updatedAt: r.updatedAt,
+    }));
+  } catch {
+    return [];
+  }
+}
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://khotruyen.vn";
+  const baseUrl =
+    process.env.NEXT_PUBLIC_SITE_URL || "https://vivutruyenhay.com";
 
   // Static pages
   const staticPages: MetadataRoute.Sitemap = [
@@ -13,6 +56,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
     {
       url: `${baseUrl}/stories`,
+      lastModified: new Date(),
+      changeFrequency: "daily",
+      priority: 0.9,
+    },
+    {
+      url: `${baseUrl}/film-reviews`,
       lastModified: new Date(),
       changeFrequency: "daily",
       priority: 0.9,
@@ -61,15 +110,23 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
   ];
 
-  // TODO: Fetch dynamic story pages from API
-  // const storiesResponse = await fetch(`${baseUrl}/api/stories?limit=1000`);
-  // const stories = await storiesResponse.json();
-  // const storyPages: MetadataRoute.Sitemap = stories.data.map((story: any) => ({
-  //   url: `${baseUrl}/stories/${story.slug}`,
-  //   lastModified: new Date(story.updatedAt),
-  //   changeFrequency: 'weekly',
-  //   priority: 0.8,
-  // }));
+  // Dynamic story pages
+  const stories = await fetchAllStorySlugs();
+  const storyPages: MetadataRoute.Sitemap = stories.map((story) => ({
+    url: `${baseUrl}/stories/${story.slug}`,
+    lastModified: new Date(story.updatedAt),
+    changeFrequency: "weekly" as const,
+    priority: 0.8,
+  }));
 
-  return [...staticPages];
+  // Dynamic film review pages
+  const filmReviews = await fetchAllFilmReviewSlugs();
+  const filmReviewPages: MetadataRoute.Sitemap = filmReviews.map((review) => ({
+    url: `${baseUrl}/film-reviews/${review.slug}`,
+    lastModified: new Date(review.updatedAt),
+    changeFrequency: "weekly" as const,
+    priority: 0.8,
+  }));
+
+  return [...staticPages, ...storyPages, ...filmReviewPages];
 }

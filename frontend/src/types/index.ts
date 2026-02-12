@@ -342,3 +342,89 @@ export interface FileInfo {
   modifiedAt: string;
   url: string;
 }
+
+// ===== Film Review Types =====
+
+export interface FilmCategory {
+  id: string;
+  name: string;
+  slug: string;
+  createdAt: string;
+  updatedAt?: string;
+  _count?: {
+    filmReviews: number;
+  };
+}
+
+export interface FilmActor {
+  id: string;
+  name: string;
+  slug: string;
+  avatar?: string;
+  createdAt: string;
+}
+
+export interface FilmReview {
+  id: string;
+  slug: string;
+  title: string;
+  description?: string;
+  thumbnailUrl?: string;
+  rating: number;
+  reviewLink: string;
+  tags: string[];
+  status: "DRAFT" | "PUBLISHED";
+  viewCount: number;
+  authorId: string;
+  affiliateId?: string;
+  createdAt: string;
+  updatedAt: string;
+
+  // Relations
+  author?: {
+    id: string;
+    name: string;
+    avatar?: string;
+  };
+  categories?: FilmCategory[];
+  actors?: FilmActor[];
+  affiliate?: AffiliateLink;
+  relatedReviews?: FilmReview[];
+  _count?: {
+    comments: number;
+  };
+}
+
+export interface FilmComment {
+  id: string;
+  content: string;
+  isApproved: boolean;
+  userId: string;
+  filmReviewId: string;
+  parentId?: string;
+  createdAt: string;
+  updatedAt: string;
+
+  // Relations
+  user?: {
+    id: string;
+    name: string;
+    avatar?: string;
+  };
+  filmReview?: {
+    id: string;
+    title: string;
+    slug: string;
+  };
+  replies?: FilmComment[];
+}
+
+export interface FilmReviewQuery {
+  page?: number;
+  limit?: number;
+  category?: string;
+  tag?: string;
+  search?: string;
+  sort?: "createdAt" | "rating" | "viewCount" | "title";
+  status?: "DRAFT" | "PUBLISHED";
+}

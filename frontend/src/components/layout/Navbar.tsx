@@ -19,7 +19,6 @@ const Navbar: React.FC = () => {
   const { t, language } = useLanguage();
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchFocused, setIsSearchFocused] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
 
@@ -50,7 +49,6 @@ const Navbar: React.FC = () => {
 
   const handleLogout = () => {
     dispatch(logoutUser());
-    setIsMobileMenuOpen(false);
     setIsUserMenuOpen(false);
     router.push("/");
   };
@@ -60,7 +58,6 @@ const Navbar: React.FC = () => {
     if (searchQuery.trim()) {
       router.push(`/stories?search=${encodeURIComponent(searchQuery.trim())}`);
       setSearchQuery("");
-      setIsMobileMenuOpen(false);
     }
   };
 
@@ -68,12 +65,6 @@ const Navbar: React.FC = () => {
     if (e.key === "Enter") {
       handleSearch(e);
     }
-  };
-
-  const toggleMobileMenu = (e?: React.MouseEvent) => {
-    e?.preventDefault();
-    e?.stopPropagation();
-    setIsMobileMenuOpen(!isMobileMenuOpen);
   };
 
   const handleProfileClick = () => {
@@ -85,59 +76,22 @@ const Navbar: React.FC = () => {
     setIsUserMenuOpen(false);
   };
 
-  const closeMobileMenu = () => {
-    setIsMobileMenuOpen(false);
-  };
-
   return (
     <nav className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           {/* Left side */}
           <div className="flex items-center">
-            {/* Mobile menu button */}
-            <button
-              onClick={(e) => toggleMobileMenu(e)}
-              className={`md:hidden p-2 rounded-md text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500 transition-colors duration-200 z-50 relative ${
-                isMobileMenuOpen ? "bg-blue-100 dark:bg-blue-900" : ""
-              }`}
-              aria-label="Toggle mobile menu"
-              type="button"
-            >
-              <svg
-                className="h-6 w-6"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                {isMobileMenuOpen ? (
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                ) : (
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M4 6h16M4 12h16M4 18h16"
-                  />
-                )}
-              </svg>
-            </button>
-
             {/* Logo */}
             <Link
               href="/"
-              className="flex-shrink-0 flex items-center ml-4 md:ml-0 group"
+              className="flex-shrink-0 flex items-center group"
             >
               <div className="hidden md:block text-lg font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 dark:from-blue-400 dark:via-purple-400 dark:to-indigo-400 bg-clip-text text-transparent group-hover:scale-105 transition-transform duration-300">
                 <span className="inline-block group-hover:animate-bounce">
                   📚
                 </span>{" "}
-                khotruyen.vn
+                vivutruyenhay.com
               </div>
             </Link>
 
@@ -176,6 +130,15 @@ const Navbar: React.FC = () => {
               >
                 <span className="relative">
                   {t("nav.genres")}
+                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-600 transition-all duration-200 group-hover:w-full"></span>
+                </span>
+              </Link>
+              <Link
+                href="/film-reviews"
+                className="relative text-gray-500 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-3 py-2 text-xs font-medium transition-all duration-200 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-md group"
+              >
+                <span className="relative">
+                  🎬 Review Phim
                   <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-600 transition-all duration-200 group-hover:w-full"></span>
                 </span>
               </Link>
@@ -272,7 +235,7 @@ const Navbar: React.FC = () => {
               <span className="inline-block group-hover:animate-bounce">
                 📚
               </span>{" "}
-              khotruyen.vn
+              vivutruyenhay.com
             </div>
           </Link>
 
@@ -524,197 +487,103 @@ const Navbar: React.FC = () => {
           </div>
         </div>
 
-        {/* Mobile menu */}
-        {isMobileMenuOpen && (
-          <div className="md:hidden border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
-            <div className="px-2 pt-2 pb-3 space-y-1">
-              {/* Mobile Search */}
-              <div className="px-3 py-2">
-                <form onSubmit={handleSearch} className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <svg
-                      className="h-5 w-5 text-gray-400"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                      />
-                    </svg>
-                  </div>
-                  <input
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    onKeyDown={handleSearchKeyDown}
-                    className="block w-full pl-10 pr-12 py-2 border border-gray-300 dark:border-gray-600 rounded-md leading-5 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                    placeholder={t("nav.search.placeholder")}
-                    type="search"
-                  />
-                  <button
-                    type="submit"
-                    className="absolute inset-y-0 right-0 flex items-center pr-3"
-                  >
-                    <svg
-                      className="h-4 w-4 text-blue-500"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M13 7l5 5m0 0l-5 5m5-5H6"
-                      />
-                    </svg>
-                  </button>
-                </form>
-              </div>
-              {/* Mobile Navigation Links */}
-              <Link
-                href="/"
-                onClick={closeMobileMenu}
-                className="block px-3 py-2 rounded-md text-base font-medium text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-              >
-                🏠 {t("nav.home")}
-              </Link>
-              <Link
-                href="/stories?type=TEXT"
-                onClick={closeMobileMenu}
-                className="block px-3 py-2 rounded-md text-base font-medium text-gray-500 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-              >
-                📚 {t("nav.stories")}
-              </Link>
-              <Link
-                href="/stories?type=AUDIO"
-                onClick={closeMobileMenu}
-                className="block px-3 py-2 rounded-md text-base font-medium text-gray-500 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-              >
-                🎧 {t("nav.audio")}
-              </Link>
-              <Link
-                href="/genres"
-                onClick={closeMobileMenu}
-                className="block px-3 py-2 rounded-md text-base font-medium text-gray-500 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-              >
-                🏷️ {t("nav.genres")}
-              </Link>
-              {/* More Links */}
-              <Link
-                href="/help"
-                onClick={closeMobileMenu}
-                className="block px-3 py-2 rounded-md text-base font-medium text-gray-500 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-              >
-                ❓ {t("nav.help")}
-              </Link>
-              <Link
-                href="/contact"
-                onClick={closeMobileMenu}
-                className="block px-3 py-2 rounded-md text-base font-medium text-gray-500 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-              >
-                📧 {t("nav.contact")}
-              </Link>
-              {/* Language Selector for Mobile */}
-              <div className="px-3 py-2">
-                <LanguageSelector />
-              </div>
-              {/* Theme Toggle for Mobile */}
-              <button
-                onClick={() => {
-                  dispatch(toggleTheme());
-                  closeMobileMenu();
-                }}
-                className="w-full text-left px-3 py-2 rounded-md text-base font-medium text-gray-500 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-              >
-                {theme === "light"
-                  ? `🌙 ${t("theme.dark")}`
-                  : `☀️ ${t("theme.light")}`}
-              </button>{" "}
-              {/* User Section for Mobile */}
-              {!isReady ? (
-                <div className="border-t border-gray-200 dark:border-gray-700 pt-3 mt-3">
-                  <div className="flex items-center px-3 py-2">
-                    <div className="animate-pulse bg-gray-200 dark:bg-gray-700 h-10 w-10 rounded-full"></div>
-                    <div className="ml-3">
-                      <div className="animate-pulse bg-gray-200 dark:bg-gray-700 h-4 w-24 rounded"></div>
-                    </div>
-                  </div>
-                </div>
-              ) : isAuthenticated && user ? (
-                <div className="border-t border-gray-200 dark:border-gray-700 pt-3 mt-3">
-                  <div className="flex items-center px-3 py-2">
-                    {user.avatar ? (
-                      <img
-                        className="h-10 w-10 rounded-full"
-                        src={user.avatar}
-                        alt={user.name}
-                      />
-                    ) : (
-                      <div className="h-10 w-10 rounded-full bg-blue-500 flex items-center justify-center text-white text-lg font-medium">
-                        {user.name.charAt(0).toUpperCase()}
-                      </div>
-                    )}
-                    <div className="ml-3">
-                      <div className="text-base font-medium text-gray-800 dark:text-white">
-                        {user.name}
-                      </div>
-                      <div className="text-sm text-gray-500 dark:text-gray-400">
-                        {user.email}
-                      </div>
-                    </div>
-                  </div>
+        {/* Mobile menu - always visible on small screens */}
+        <div className="lg:hidden border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+          {/* Mobile Navigation Links - horizontal scrollable */}
+          <div className="flex items-center gap-1 px-2 py-2 overflow-x-auto scrollbar-hide">
+            <Link
+              href="/"
+              className="flex-shrink-0 px-3 py-1.5 rounded-full text-sm font-medium text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors whitespace-nowrap"
+            >
+              🏠 {t("nav.home")}
+            </Link>
+            <Link
+              href="/stories?type=TEXT"
+              className="flex-shrink-0 px-3 py-1.5 rounded-full text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors whitespace-nowrap"
+            >
+              📚 {t("nav.stories")}
+            </Link>
+            <Link
+              href="/stories?type=AUDIO"
+              className="flex-shrink-0 px-3 py-1.5 rounded-full text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors whitespace-nowrap"
+            >
+              🎧 {t("nav.audio")}
+            </Link>
+            <Link
+              href="/genres"
+              className="flex-shrink-0 px-3 py-1.5 rounded-full text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors whitespace-nowrap"
+            >
+              🏷️ {t("nav.genres")}
+            </Link>
+            <Link
+              href="/film-reviews"
+              className="flex-shrink-0 px-3 py-1.5 rounded-full text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors whitespace-nowrap"
+            >
+              🎬 Review Phim
+            </Link>
+            <Link
+              href="/help"
+              className="flex-shrink-0 px-3 py-1.5 rounded-full text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors whitespace-nowrap"
+            >
+              ❓ {t("nav.help")}
+            </Link>
+            <Link
+              href="/contact"
+              className="flex-shrink-0 px-3 py-1.5 rounded-full text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors whitespace-nowrap"
+            >
+              📧 {t("nav.contact")}
+            </Link>
 
+            {/* Theme Toggle */}
+            <button
+              onClick={() => dispatch(toggleTheme())}
+              className="flex-shrink-0 px-3 py-1.5 rounded-full text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors whitespace-nowrap"
+            >
+              {theme === "light" ? `🌙` : `☀️`}
+            </button>
+
+            {/* Auth Links */}
+            {isReady && isAuthenticated && user ? (
+              <>
+                <Link
+                  href="/bookmarks"
+                  className="flex-shrink-0 px-3 py-1.5 rounded-full text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors whitespace-nowrap"
+                >
+                  🔖
+                </Link>
+                {isAdmin && (
                   <Link
-                    href="/bookmarks"
-                    onClick={closeMobileMenu}
-                    className="block px-3 py-2 rounded-md text-base font-medium text-gray-500 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                    href="/admin"
+                    className="flex-shrink-0 px-3 py-1.5 rounded-full text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors whitespace-nowrap"
                   >
-                    🔖 {t("nav.bookmarks")}
+                    ⚙️
                   </Link>
-
-                  {isAdmin && (
-                    <Link
-                      href="/admin"
-                      onClick={closeMobileMenu}
-                      className="block px-3 py-2 rounded-md text-base font-medium text-gray-500 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-                    >
-                      ⚙️ {t("nav.admin")}
-                    </Link>
-                  )}
-
-                  <button
-                    onClick={handleLogout}
-                    className="w-full text-left px-3 py-2 rounded-md text-base font-medium text-red-500 dark:text-red-400 hover:text-red-600 dark:hover:text-red-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-                  >
-                    🚪 {t("nav.logout")}
-                  </button>
-                </div>
-              ) : (
-                <div className="border-t border-gray-200 dark:border-gray-700 pt-3 mt-3">
-                  <Link
-                    href="/auth/login"
-                    onClick={closeMobileMenu}
-                    className="block px-3 py-2 rounded-md text-base font-medium text-gray-500 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-                  >
-                    🔑 {t("nav.login")}
-                  </Link>
-
-                  <Link
-                    href="/auth/register"
-                    onClick={closeMobileMenu}
-                    className="block px-3 py-2 rounded-md text-base font-medium bg-blue-600 text-white hover:bg-blue-700 transition-colors mx-3 mt-2 text-center"
-                  >
-                    ✨ {t("nav.register")}
-                  </Link>
-                </div>
-              )}
-            </div>
+                )}
+                <button
+                  onClick={handleLogout}
+                  className="flex-shrink-0 px-3 py-1.5 rounded-full text-sm font-medium text-red-500 dark:text-red-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors whitespace-nowrap"
+                >
+                  🚪
+                </button>
+              </>
+            ) : isReady ? (
+              <>
+                <Link
+                  href="/auth/login"
+                  className="flex-shrink-0 px-3 py-1.5 rounded-full text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors whitespace-nowrap"
+                >
+                  🔑 {t("nav.login")}
+                </Link>
+                <Link
+                  href="/auth/register"
+                  className="flex-shrink-0 px-3 py-1.5 rounded-full text-sm font-medium bg-blue-600 text-white hover:bg-blue-700 transition-colors whitespace-nowrap"
+                >
+                  ✨ {t("nav.register")}
+                </Link>
+              </>
+            ) : null}
           </div>
-        )}
+        </div>
       </div>
     </nav>
   );

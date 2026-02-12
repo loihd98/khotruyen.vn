@@ -4,8 +4,11 @@
 
 // Get the base URL for media files
 export const getMediaBaseUrl = (): string => {
-  // Use the specific media URL if set, otherwise fallback to nginx proxy
-  // This ensures media files are served through nginx reverse proxy
+  // Server-side: use internal Docker network hostname if available
+  if (typeof window === "undefined" && process.env.MEDIA_URL_INTERNAL) {
+    return process.env.MEDIA_URL_INTERNAL;
+  }
+  // Client-side: use the public media URL
   return (
     process.env.NEXT_PUBLIC_MEDIA_URL || "http://localhost" // nginx serves uploads directly
   );
@@ -43,7 +46,7 @@ export const getUploadApiUrl = (type: "image" | "audio"): string => {
 // Validate file type for uploads
 export const validateFileType = (
   file: File,
-  type: "image" | "audio"
+  type: "image" | "audio",
 ): boolean => {
   const imageTypes = [
     "image/jpeg",

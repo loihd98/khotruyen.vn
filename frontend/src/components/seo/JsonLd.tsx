@@ -19,7 +19,7 @@ export function getOrganizationSchema(siteUrl: string) {
   return {
     "@context": "https://schema.org",
     "@type": "Organization",
-    name: "khotruyen.vn",
+    name: "vivutruyenhay.com",
     url: siteUrl,
     logo: `${siteUrl}/logo.svg`,
     description:
@@ -47,13 +47,13 @@ export function getWebsiteSchema(siteUrl: string) {
   return {
     "@context": "https://schema.org",
     "@type": "WebSite",
-    name: "khotruyen.vn",
+    name: "vivutruyenhay.com",
     url: siteUrl,
     description:
       "Kho truyện online miễn phí - Đọc và nghe truyện mọi lúc mọi nơi",
     publisher: {
       "@type": "Organization",
-      name: "khotruyen.vn",
+      name: "vivutruyenhay.com",
       logo: {
         "@type": "ImageObject",
         url: `${siteUrl}/logo.svg`,
@@ -86,7 +86,7 @@ export function getBookSchema(story: any, siteUrl: string) {
     },
     publisher: {
       "@type": "Organization",
-      name: "khotruyen.vn",
+      name: "vivutruyenhay.com",
     },
     datePublished: story.createdAt,
     dateModified: story.updatedAt,
@@ -119,7 +119,7 @@ export function getArticleSchema(chapter: any, story: any, siteUrl: string) {
     },
     publisher: {
       "@type": "Organization",
-      name: "khotruyen.vn",
+      name: "vivutruyenhay.com",
       logo: {
         "@type": "ImageObject",
         url: `${siteUrl}/logo.svg`,
@@ -157,7 +157,7 @@ export function getAudioBookSchema(story: any, siteUrl: string) {
     },
     publisher: {
       "@type": "Organization",
-      name: "khotruyen.vn",
+      name: "vivutruyenhay.com",
     },
     datePublished: story.createdAt,
     inLanguage: "vi-VN",
@@ -178,5 +178,64 @@ export function getBreadcrumbSchema(
       name: item.name,
       item: `${siteUrl}${item.url}`,
     })),
+  };
+}
+
+// Schema for Film Review (Review + Movie)
+export function getFilmReviewSchema(review: any, siteUrl: string) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Review",
+    name: review.title,
+    reviewBody: review.description,
+    url: `${siteUrl}/film-reviews/${review.slug}`,
+    datePublished: review.createdAt,
+    dateModified: review.updatedAt,
+    author: {
+      "@type": "Person",
+      name: review.author?.name || "vivutruyenhay.com",
+    },
+    publisher: {
+      "@type": "Organization",
+      name: "vivutruyenhay.com",
+      url: siteUrl,
+    },
+    reviewRating: review.rating
+      ? {
+          "@type": "Rating",
+          ratingValue: review.rating,
+          bestRating: 10,
+          worstRating: 0,
+        }
+      : undefined,
+    itemReviewed: {
+      "@type": "Movie",
+      name: review.title,
+      image: review.thumbnailUrl || `${siteUrl}/og-image.svg`,
+      genre: review.categories?.map((c: any) => c.name) || [],
+      actor: review.actors?.map((a: any) => ({
+        "@type": "Person",
+        name: a.name,
+      })) || [],
+    },
+    inLanguage: "vi-VN",
+  };
+}
+
+// Schema for Film Reviews List page
+export function getFilmReviewsListSchema(siteUrl: string) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    name: "Review Phim - vivutruyenhay.com",
+    description:
+      "Xem các bài review phim hay nhất. Đánh giá phim, xếp hạng và nhận xét từ cộng đồng.",
+    url: `${siteUrl}/film-reviews`,
+    publisher: {
+      "@type": "Organization",
+      name: "vivutruyenhay.com",
+      url: siteUrl,
+    },
+    inLanguage: "vi-VN",
   };
 }

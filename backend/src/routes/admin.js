@@ -54,6 +54,42 @@ router.delete("/affiliate-links/:id", adminController.deleteAffiliateLink);
 const mediaRoutes = require("./media");
 router.use("/media", mediaRoutes);
 
+// Film Review management
+const filmReviewsController = require("../controllers/filmReviewsController");
+router.get("/film-reviews", filmReviewsController.adminGetFilmReviews);
+router.patch(
+  "/film-reviews/bulk-affiliate",
+  filmReviewsController.adminBulkAssignAffiliate,
+);
+router.get("/film-reviews/:id", filmReviewsController.adminGetFilmReviewById);
+router.post("/film-reviews", filmReviewsController.adminCreateFilmReview);
+router.put("/film-reviews/:id", filmReviewsController.adminUpdateFilmReview);
+router.patch("/film-reviews/:id", filmReviewsController.adminUpdateFilmReview);
+router.delete("/film-reviews/:id", filmReviewsController.adminDeleteFilmReview);
+
+// Film Category management
+router.get("/film-categories", filmReviewsController.adminGetFilmCategories);
+router.post("/film-categories", filmReviewsController.adminCreateFilmCategory);
+router.patch(
+  "/film-categories/:id",
+  filmReviewsController.adminUpdateFilmCategory,
+);
+router.delete(
+  "/film-categories/:id",
+  filmReviewsController.adminDeleteFilmCategory,
+);
+
+// Film Comment management
+router.get("/film-comments", filmReviewsController.adminGetFilmComments);
+router.patch(
+  "/film-comments/:id/approve",
+  filmReviewsController.adminApproveFilmComment,
+);
+router.delete(
+  "/film-comments/:id",
+  filmReviewsController.adminDeleteFilmComment,
+);
+
 // Sample data and analytics
 router.post("/sample-data", adminController.createSampleData);
 router.get("/analytics", adminController.getAnalytics);

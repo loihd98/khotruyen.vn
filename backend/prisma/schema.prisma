@@ -47,6 +47,8 @@ model User {
   comments     Comment[]
   bookmarks    Bookmark[]
   unlockedChapters Chapter[] @relation("ChapterUnlocks")
+  filmReviews  FilmReview[]
+  filmComments FilmComment[]
   
   @@map("users")
 }
@@ -76,6 +78,7 @@ model AffiliateLink {
   // Relations
   stories     Story[]
   chapters    Chapter[]
+  filmReviews FilmReview[]
   
   @@map("affiliate_links")
 }
@@ -203,4 +206,98 @@ model Bookmark {
   
   @@unique([userId, storyId, chapterId])
   @@map("bookmarks")
+}
+
+// ===== Film Review Feature =====
+
+enum FilmReviewStatus {
+  DRAFT
+  PUBLISHED
+}
+
+model FilmCategory {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  slug      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  filmReviews FilmReview[]
+
+  @@map("film_categories")
+}
+
+model FilmActor {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  avatar    String?
+  createdAt DateTime @default(now())
+
+  // Relations
+  filmReviews FilmReview[]
+
+  @@map("film_actors")
+}
+
+model FilmReview {
+  id            String           @id @default(cuid())
+  slug          String           @unique
+  title         String
+  description   String?          @db.Text
+  thumbnailUrl  String?
+  rating        Float            @default(0) // 0-10
+  reviewLink    String           // Required: link to the review source
+  tags          String[]         // Array of tag strings
+  status        FilmReviewStatus @default(DRAFT)
+  viewCount     Int              @default(0)
+
+  // Author relationship
+  authorId      String
+  author        User             @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  // Affiliate link relationship (optional)
+  affiliateId   String?
+  affiliate     AffiliateLink?   @relation(fields: [affiliateId], references: [id], onDelete: SetNull)
+
+  // Categories relationship (many-to-many)
+  categories    FilmCategory[]
+
+  // Actors relationship (many-to-many)
+  actors        FilmActor[]
+
+  // Timestamps
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+
+  // Relations
+  comments      FilmComment[]
+
+  @@map("film_reviews")
+}
+
+model FilmComment {
+  id           String   @id @default(cuid())
+  content      String
+  isApproved   Boolean  @default(false)
+
+  // User relationship
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Film review relationship
+  filmReviewId String
+  filmReview   FilmReview @relation(fields: [filmReviewId], references: [id], onDelete: Cascade)
+
+  // Parent comment for threading
+  parentId     String?
+  parent       FilmComment?  @relation("FilmCommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies      FilmComment[] @relation("FilmCommentReplies")
+
+  // Timestamps
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("film_comments")
 }

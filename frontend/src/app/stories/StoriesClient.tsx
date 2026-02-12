@@ -41,19 +41,31 @@ interface PaginationData {
   limit: number;
 }
 
-export default function StoriesClient() {
+interface StoriesClientProps {
+  initialStories?: any[];
+  initialPagination?: PaginationData;
+  initialGenres?: Array<{ id: string; name: string; slug: string }>;
+}
+
+export default function StoriesClient({
+  initialStories,
+  initialPagination,
+  initialGenres,
+}: StoriesClientProps = {}) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
   // State management
-  const [stories, setStories] = useState<Story[]>([]);
-  const [pagination, setPagination] = useState<PaginationData>({
-    page: 1,
-    pages: 1,
-    total: 0,
-    limit: 10,
-  });
-  const [loading, setLoading] = useState(true);
+  const [stories, setStories] = useState<Story[]>(initialStories || []);
+  const [pagination, setPagination] = useState<PaginationData>(
+    initialPagination || {
+      page: 1,
+      pages: 1,
+      total: 0,
+      limit: 10,
+    }
+  );
+  const [loading, setLoading] = useState(!initialStories);
   const [searchQuery, setSearchQuery] = useState(
     searchParams.get("search") || ""
   );
@@ -68,7 +80,7 @@ export default function StoriesClient() {
   );
   const [genres, setGenres] = useState<
     Array<{ id: string; name: string; slug: string }>
-  >([]);
+  >(initialGenres || []);
 
   const currentPage = Number(searchParams.get("page")) || 1;
 
@@ -124,8 +136,9 @@ export default function StoriesClient() {
     fetchStories(currentPage);
   }, [currentPage, selectedType, searchQuery, selectedGenre, sortBy]);
 
-  // Fetch genres on component mount
+  // Fetch genres on component mount (skip if SSR provided)
   useEffect(() => {
+    if (initialGenres && initialGenres.length > 0) return;
     const fetchGenres = async () => {
       try {
         const response = await apiClient.get("/stories/genres");

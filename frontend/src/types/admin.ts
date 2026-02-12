@@ -7,4 +7,6 @@ export type AdminTab =
   | "users"
   | "comments"
   | "media"
-  | "settings";
+  | "settings"
+  | "film-reviews"
+  | "film-categories";

@@ -19,6 +19,12 @@ class AdminController {
         recentStories,
         adminUsers,
         topStories,
+        totalFilmReviews,
+        publishedFilmReviews,
+        totalFilmCategories,
+        totalFilmComments,
+        totalFilmViews,
+        topFilmReviews,
       ] = await Promise.all([
         // Basic counts
         prisma.user.count(),
@@ -104,6 +110,24 @@ class AdminController {
             type: true,
           },
         }),
+
+        // Film review stats
+        prisma.filmReview.count(),
+        prisma.filmReview.count({ where: { status: "PUBLISHED" } }),
+        prisma.filmCategory.count(),
+        prisma.filmComment.count(),
+        prisma.filmReview.aggregate({ _sum: { viewCount: true } }),
+        prisma.filmReview.findMany({
+          take: 5,
+          orderBy: { viewCount: "desc" },
+          where: { status: "PUBLISHED" },
+          select: {
+            title: true,
+            slug: true,
+            viewCount: true,
+            rating: true,
+          },
+        }),
       ]);
 
       res.json({
@@ -112,12 +136,19 @@ class AdminController {
         totalChapters,
         totalComments,
         totalViews: totalViews._sum.viewCount || 0,
-        activeUsers: totalUsers, // For now, consider all users as active
+        activeUsers: totalUsers,
         newUsers: recentUsersCount,
         adminUsers,
         recentStories,
         recentUsers: recentUsersList,
         topStories,
+        // Film review stats
+        totalFilmReviews,
+        publishedFilmReviews,
+        totalFilmCategories,
+        totalFilmComments,
+        totalFilmViews: totalFilmViews._sum.viewCount || 0,
+        topFilmReviews,
       });
     } catch (error) {
       console.error("Get dashboard stats error:", error);
@@ -1883,13 +1914,13 @@ class AdminController {
           if (story.type === "TEXT") {
             chapterData.content = this.generateSampleTextContent(
               story.title,
-              i
+              i,
             );
           } else if (story.type === "AUDIO") {
             chapterData.audioUrl = `https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3`;
             chapterData.content = this.generateSampleTextContent(
               story.title,
-              i
+              i,
             );
           }
 
@@ -1966,12 +1997,12 @@ class AdminController {
 
     for (let i = 0; i < paragraphCount; i++) {
       content.push(
-        sampleParagraphs[Math.floor(Math.random() * sampleParagraphs.length)]
+        sampleParagraphs[Math.floor(Math.random() * sampleParagraphs.length)],
       );
     }
 
     return `# ${storyTitle} - Chương ${chapterNumber}\n\n${content.join(
-      "\n\n"
+      "\n\n",
     )}\n\n*Tiếp tục đọc để khám phá những diễn biến hấp dẫn tiếp theo...*`;
   }
 

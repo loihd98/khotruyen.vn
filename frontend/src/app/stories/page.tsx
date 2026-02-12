@@ -4,6 +4,8 @@ import Layout from "../../components/layout/Layout";
 import StoriesClient from "./StoriesClient";
 import StorySidebar from "../../components/layout/StorySidebar";
 
+const API_URL = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || "http://localhost/api";
+
 // Generate metadata for SEO
 export async function generateMetadata({
   searchParams,
@@ -14,7 +16,7 @@ export async function generateMetadata({
   const search = searchParams.search as string;
   const genre = searchParams.genre as string;
 
-  let title = "Kho Truyện - khotruyen.vn";
+  let title = "Kho Truyện - vivutruyenhay.com";
   let description =
     "Khám phá hàng ngàn câu chuyện hay từ các tác giả tài năng. Đọc truyện chữ và nghe truyện audio miễn phí.";
 
@@ -88,8 +90,43 @@ const StoriesLoading = () => (
   </div>
 );
 
+// Server-side data fetching
+async function fetchInitialData(searchParams: { [key: string]: string | string[] | undefined }) {
+  try {
+    const params = new URLSearchParams();
+    params.set("page", (searchParams.page as string) || "1");
+    params.set("limit", "10");
+    if (searchParams.type) params.set("type", searchParams.type as string);
+    if (searchParams.genre) params.set("genre", searchParams.genre as string);
+    if (searchParams.search) params.set("search", searchParams.search as string);
+    if (searchParams.sort) params.set("sort", searchParams.sort as string);
+
+    const [storiesRes, genresRes] = await Promise.all([
+      fetch(`${API_URL}/stories?${params}`, { next: { revalidate: 60 } }).catch(() => null),
+      fetch(`${API_URL}/stories/genres`, { next: { revalidate: 300 } }).catch(() => null),
+    ]);
+
+    const storiesData = storiesRes?.ok ? await storiesRes.json() : null;
+    const genresData = genresRes?.ok ? await genresRes.json() : null;
+
+    return {
+      stories: storiesData?.data?.data || storiesData?.data || [],
+      pagination: storiesData?.data?.pagination || storiesData?.pagination || null,
+      genres: genresData?.genres || [],
+    };
+  } catch {
+    return { stories: [], pagination: null, genres: [] };
+  }
+}
+
 // Client-side page component
-export default function StoriesPage() {
+export default async function StoriesPage({
+  searchParams,
+}: {
+  searchParams: { [key: string]: string | string[] | undefined };
+}) {
+  const { stories, pagination, genres } = await fetchInitialData(searchParams);
+
   return (
     <Layout>
       <div className="container mx-auto px-4 py-8">
@@ -107,7 +144,11 @@ export default function StoriesPage() {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Main Content */}
           <div className="lg:col-span-3">
-            <StoriesClient />
+            <StoriesClient
+              initialStories={stories}
+              initialPagination={pagination}
+              initialGenres={genres}
+            />
           </div>
 
           {/* Sidebar */}

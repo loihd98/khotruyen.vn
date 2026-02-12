@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og";
 
 export const runtime = "edge";
-export const alt = "khotruyen.vn";
+export const alt = "vivutruyenhay.com";
 export const size = {
   width: 180,
   height: 180,
