@@ -20,11 +20,18 @@ const Navbar: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
 
   const { user, isAuthenticated, isAdmin, isReady } = useAuth();
 
   const { theme } = useSelector((state: RootState) => state.ui);
+
+  const handleToggleTheme = () => {
+    // Mark that user explicitly chose a theme
+    localStorage.setItem("user_theme_choice", "1");
+    dispatch(toggleTheme());
+  };
 
   const isStoriesPage = useMemo(() => {
     return pathName?.startsWith("/stories");
@@ -239,6 +246,25 @@ const Navbar: React.FC = () => {
             </div>
           </Link>
 
+          {/* Hamburger button - Mobile only */}
+          <div className="flex lg:hidden items-center">
+            <button
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="p-2 rounded-lg text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200"
+              aria-label="Toggle menu"
+            >
+              {isMobileMenuOpen ? (
+                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              ) : (
+                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              )}
+            </button>
+          </div>
+
           {/* Right side - Desktop */}
           <div className="hidden lg:flex items-center space-x-4">
             {/* Language selector */}
@@ -246,7 +272,7 @@ const Navbar: React.FC = () => {
 
             {/* Theme toggle */}
             <button
-              onClick={() => dispatch(toggleTheme())}
+              onClick={() => handleToggleTheme()}
               className="group p-3 rounded-xl text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gradient-to-br hover:from-yellow-50 hover:to-orange-50 dark:hover:from-gray-700 dark:hover:to-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300 hover:shadow-lg hover:scale-110 transform"
             >
               {theme === "light" ? (
@@ -487,103 +513,149 @@ const Navbar: React.FC = () => {
           </div>
         </div>
 
-        {/* Mobile menu - always visible on small screens */}
-        <div className="lg:hidden border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
-          {/* Mobile Navigation Links - horizontal scrollable */}
-          <div className="flex items-center gap-1 px-2 py-2 overflow-x-auto scrollbar-hide">
-            <Link
-              href="/"
-              className="flex-shrink-0 px-3 py-1.5 rounded-full text-sm font-medium text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors whitespace-nowrap"
-            >
-              🏠 {t("nav.home")}
-            </Link>
-            <Link
-              href="/stories?type=TEXT"
-              className="flex-shrink-0 px-3 py-1.5 rounded-full text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors whitespace-nowrap"
-            >
-              📚 {t("nav.stories")}
-            </Link>
-            <Link
-              href="/stories?type=AUDIO"
-              className="flex-shrink-0 px-3 py-1.5 rounded-full text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors whitespace-nowrap"
-            >
-              🎧 {t("nav.audio")}
-            </Link>
-            <Link
-              href="/genres"
-              className="flex-shrink-0 px-3 py-1.5 rounded-full text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors whitespace-nowrap"
-            >
-              🏷️ {t("nav.genres")}
-            </Link>
-            <Link
-              href="/film-reviews"
-              className="flex-shrink-0 px-3 py-1.5 rounded-full text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors whitespace-nowrap"
-            >
-              🎬 Review Phim
-            </Link>
-            <Link
-              href="/help"
-              className="flex-shrink-0 px-3 py-1.5 rounded-full text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors whitespace-nowrap"
-            >
-              ❓ {t("nav.help")}
-            </Link>
-            <Link
-              href="/contact"
-              className="flex-shrink-0 px-3 py-1.5 rounded-full text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors whitespace-nowrap"
-            >
-              📧 {t("nav.contact")}
-            </Link>
+        {/* Mobile menu - toggleable hamburger dropdown */}
+        {isMobileMenuOpen && (
+          <div className="lg:hidden border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-lg">
 
-            {/* Theme Toggle */}
-            <button
-              onClick={() => dispatch(toggleTheme())}
-              className="flex-shrink-0 px-3 py-1.5 rounded-full text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors whitespace-nowrap"
-            >
-              {theme === "light" ? `🌙` : `☀️`}
-            </button>
+            {/* Featured 3 categories block */}
+            <div className="px-4 pt-4 pb-2">
+              <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-3">Khám phá</p>
+              <div className="flex flex-col gap-2">
+                <Link
+                  href="/stories?type=TEXT"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="flex items-center gap-3 px-4 py-3 rounded-xl bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors"
+                >
+                  <span className="text-2xl">📚</span>
+                  <div>
+                    <div className="font-semibold text-sm">{t("nav.stories")}</div>
+                    <div className="text-xs text-blue-500 dark:text-blue-400">Đọc truyện chữ</div>
+                  </div>
+                </Link>
+                <Link
+                  href="/stories?type=AUDIO"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="flex items-center gap-3 px-4 py-3 rounded-xl bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300 hover:bg-purple-100 dark:hover:bg-purple-900/40 transition-colors"
+                >
+                  <span className="text-2xl">🎧</span>
+                  <div>
+                    <div className="font-semibold text-sm">{t("nav.audio")}</div>
+                    <div className="text-xs text-purple-500 dark:text-purple-400">Nghe truyện audio</div>
+                  </div>
+                </Link>
+                <Link
+                  href="/film-reviews"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="flex items-center gap-3 px-4 py-3 rounded-xl bg-rose-50 dark:bg-rose-900/20 text-rose-700 dark:text-rose-300 hover:bg-rose-100 dark:hover:bg-rose-900/40 transition-colors"
+                >
+                  <span className="text-2xl">🎬</span>
+                  <div>
+                    <div className="font-semibold text-sm">Review Phim</div>
+                    <div className="text-xs text-rose-500 dark:text-rose-400">Đánh giá phim hay</div>
+                  </div>
+                </Link>
+              </div>
+            </div>
 
-            {/* Auth Links */}
-            {isReady && isAuthenticated && user ? (
-              <>
+            {/* Divider */}
+            <div className="border-t border-gray-100 dark:border-gray-700 mx-4 my-2" />
+
+            {/* Other navigation links */}
+            <div className="px-4 pb-2">
+              <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2">Trang</p>
+              <div className="flex flex-col gap-1">
                 <Link
-                  href="/bookmarks"
-                  className="flex-shrink-0 px-3 py-1.5 rounded-full text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors whitespace-nowrap"
+                  href="/"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                 >
-                  🔖
-                </Link>
-                {isAdmin && (
-                  <Link
-                    href="/admin"
-                    className="flex-shrink-0 px-3 py-1.5 rounded-full text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors whitespace-nowrap"
-                  >
-                    ⚙️
-                  </Link>
-                )}
-                <button
-                  onClick={handleLogout}
-                  className="flex-shrink-0 px-3 py-1.5 rounded-full text-sm font-medium text-red-500 dark:text-red-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors whitespace-nowrap"
-                >
-                  🚪
-                </button>
-              </>
-            ) : isReady ? (
-              <>
-                <Link
-                  href="/auth/login"
-                  className="flex-shrink-0 px-3 py-1.5 rounded-full text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors whitespace-nowrap"
-                >
-                  🔑 {t("nav.login")}
+                  🏠 {t("nav.home")}
                 </Link>
                 <Link
-                  href="/auth/register"
-                  className="flex-shrink-0 px-3 py-1.5 rounded-full text-sm font-medium bg-blue-600 text-white hover:bg-blue-700 transition-colors whitespace-nowrap"
+                  href="/genres"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                 >
-                  ✨ {t("nav.register")}
+                  🏷️ {t("nav.genres")}
                 </Link>
-              </>
-            ) : null}
+                <Link
+                  href="/help"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                >
+                  ❓ {t("nav.help")}
+                </Link>
+                <Link
+                  href="/contact"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                >
+                  📧 {t("nav.contact")}
+                </Link>
+              </div>
+            </div>
+
+            {/* Divider */}
+            <div className="border-t border-gray-100 dark:border-gray-700 mx-4 my-2" />
+
+            {/* Auth + Theme row */}
+            <div className="px-4 pb-4 flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                {isReady && isAuthenticated && user ? (
+                  <>
+                    <Link
+                      href="/bookmarks"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="px-3 py-1.5 rounded-full text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
+                    >
+                      🔖 {t("nav.bookmarks")}
+                    </Link>
+                    {isAdmin && (
+                      <Link
+                        href="/admin"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        className="px-3 py-1.5 rounded-full text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
+                      >
+                        ⚙️ Admin
+                      </Link>
+                    )}
+                    <button
+                      onClick={() => { handleLogout(); setIsMobileMenuOpen(false); }}
+                      className="px-3 py-1.5 rounded-full text-sm font-medium text-red-500 dark:text-red-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                    >
+                      🚪 {t("nav.logout")}
+                    </button>
+                  </>
+                ) : isReady ? (
+                  <>
+                    <Link
+                      href="/auth/login"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="px-3 py-1.5 rounded-full text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
+                    >
+                      🔑 {t("nav.login")}
+                    </Link>
+                    <Link
+                      href="/auth/register"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="px-3 py-1.5 rounded-full text-sm font-medium bg-blue-600 text-white hover:bg-blue-700 transition-colors"
+                    >
+                      ✨ {t("nav.register")}
+                    </Link>
+                  </>
+                ) : null}
+              </div>
+
+              {/* Theme Toggle */}
+              <button
+                onClick={() => handleToggleTheme()}
+                className="p-2 rounded-full text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
+              >
+                {theme === "light" ? `🌙` : `☀️`}
+              </button>
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </nav>
   );

@@ -118,7 +118,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="vi">
+    <html lang="vi" suppressHydrationWarning>
       <head>
         <meta name="theme-color" content="#1e40af" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -127,6 +127,32 @@ export default function RootLayout({
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="application-name" content="vivutruyenhay.com" />
         <link rel="author" href={`${siteUrl}/humans.txt`} />
+        {/* Inline script runs before React hydration to prevent flash of light theme */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  var persisted = localStorage.getItem('persist:ui');
+                  var theme = 'dark';
+                  if (persisted) {
+                    var parsed = JSON.parse(persisted);
+                    if (parsed.theme) {
+                      theme = JSON.parse(parsed.theme);
+                    }
+                  }
+                  if (theme === 'dark') {
+                    document.documentElement.classList.add('dark');
+                  } else {
+                    document.documentElement.classList.remove('dark');
+                  }
+                } catch (e) {
+                  document.documentElement.classList.add('dark');
+                }
+              })();
+            `,
+          }}
+        />
       </head>
       <body className={inter.className}>
         <ClientProvider>

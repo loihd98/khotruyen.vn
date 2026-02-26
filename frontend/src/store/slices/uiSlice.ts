@@ -3,7 +3,7 @@ import { UIState } from "../../types";
 
 const initialState: UIState = {
   sidebarOpen: false,
-  theme: "light",
+  theme: "dark",
   audioPlayerOpen: false,
   currentAudio: undefined,
 };
@@ -26,7 +26,7 @@ const uiSlice = createSlice({
     },
     openAudioPlayer: (
       state,
-      action: PayloadAction<UIState["currentAudio"]>
+      action: PayloadAction<UIState["currentAudio"]>,
     ) => {
       state.audioPlayerOpen = true;
       state.currentAudio = action.payload;
@@ -37,7 +37,7 @@ const uiSlice = createSlice({
     },
     updateCurrentAudio: (
       state,
-      action: PayloadAction<Partial<UIState["currentAudio"]>>
+      action: PayloadAction<Partial<UIState["currentAudio"]>>,
     ) => {
       if (state.currentAudio) {
         state.currentAudio = { ...state.currentAudio, ...action.payload };

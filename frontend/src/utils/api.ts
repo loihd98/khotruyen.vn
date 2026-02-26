@@ -346,7 +346,7 @@ export const adminAPI = {
 
   approveComment: (commentId: string) =>
     apiRequest<Comment>(() =>
-      apiClient.put(`/admin/comments/${commentId}/approve`),
+      apiClient.patch(`/admin/comments/${commentId}/approve`),
     ),
 
   deleteComment: (commentId: string) =>

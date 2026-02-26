@@ -63,29 +63,47 @@ const Hero: React.FC = () => {
         </div>
       </div>
 
-      {/* Mobile Banner - 3 action buttons */}
-      <div className="sm:hidden bg-white dark:bg-gray-900 py-4 px-3">
-        <div className="grid grid-cols-3 gap-2">
+      {/* Mobile Banner - 3 action buttons vertical */}
+      <div className="sm:hidden bg-white dark:bg-gray-900 py-2 px-3">
+        <div className="flex flex-col gap-2">
           <Link
             href="/stories"
-            className="flex flex-col items-center gap-1.5 bg-blue-600 text-white px-3 py-3 rounded-xl font-semibold text-sm hover:bg-blue-700 transition-colors shadow-md"
+            className="flex items-center gap-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 px-3 py-2.5 rounded-xl hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors"
           >
             <span className="text-2xl">📚</span>
-            <span>Đọc Truyện</span>
+            <div>
+              <div className="font-semibold text-blue-700 dark:text-blue-300 text-sm">Đọc Truyện</div>
+              <div className="text-xs text-blue-500 dark:text-blue-400">Hàng ngàn truyện hay miễn phí</div>
+            </div>
+            <svg className="ml-auto h-4 w-4 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
           </Link>
           <Link
             href="/stories?type=AUDIO"
-            className="flex flex-col items-center gap-1.5 bg-purple-600 text-white px-3 py-3 rounded-xl font-semibold text-sm hover:bg-purple-700 transition-colors shadow-md"
+            className="flex items-center gap-3 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 px-3 py-2.5 rounded-xl hover:bg-purple-100 dark:hover:bg-purple-900/40 transition-colors"
           >
             <span className="text-2xl">🎧</span>
-            <span>Nghe Audio</span>
+            <div>
+              <div className="font-semibold text-purple-700 dark:text-purple-300 text-sm">Nghe Audio</div>
+              <div className="text-xs text-purple-500 dark:text-purple-400">Trải nghiệm âm thanh sống động</div>
+            </div>
+            <svg className="ml-auto h-4 w-4 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
           </Link>
           <Link
             href="/film-reviews"
-            className="flex flex-col items-center gap-1.5 bg-gradient-to-r from-yellow-500 to-orange-500 text-white px-3 py-3 rounded-xl font-semibold text-sm hover:from-yellow-600 hover:to-orange-600 transition-colors shadow-md"
+            className="flex items-center gap-3 bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800 px-3 py-2.5 rounded-xl hover:bg-rose-100 dark:hover:bg-rose-900/40 transition-colors"
           >
             <span className="text-2xl">🎬</span>
-            <span>Review Phim</span>
+            <div>
+              <div className="font-semibold text-rose-700 dark:text-rose-300 text-sm">Review Phim</div>
+              <div className="text-xs text-rose-500 dark:text-rose-400">Đánh giá phim hay nhất từ cộng đồng</div>
+            </div>
+            <svg className="ml-auto h-4 w-4 text-rose-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
           </Link>
         </div>
       </div>

@@ -1435,7 +1435,7 @@ class AdminController {
         });
       }
 
-      const slug = slugify(name, { lower: true });
+      const slug = slugify(name.replace(/[đĐ]/g, (c) => c === 'đ' ? 'd' : 'D'), { lower: true });
 
       // Check if genre exists
       const existingGenre = await prisma.genre.findUnique({
@@ -1481,7 +1481,7 @@ class AdminController {
         });
       }
 
-      const slug = slugify(name, { lower: true });
+      const slug = slugify(name.replace(/[đĐ]/g, (c) => c === 'đ' ? 'd' : 'D'), { lower: true });
 
       // Check if another genre with same slug exists
       const existingGenre = await prisma.genre.findFirst({

@@ -69,6 +69,9 @@ export default function StoriesClient({
   const [searchQuery, setSearchQuery] = useState(
     searchParams.get("search") || ""
   );
+  const [debouncedSearch, setDebouncedSearch] = useState(
+    searchParams.get("search") || ""
+  );
   const [selectedType, setSelectedType] = useState<"TEXT" | "AUDIO" | "">(
     (searchParams.get("type") as "TEXT" | "AUDIO") || ""
   );
@@ -90,7 +93,7 @@ export default function StoriesClient({
       setLoading(true);
       const params = new URLSearchParams({
         page: page.toString(),
-        limit: "10",
+        limit: debouncedSearch.trim() ? "24" : "10",
       });
 
       if (
@@ -100,8 +103,8 @@ export default function StoriesClient({
         params.append("type", selectedType);
       }
 
-      if (searchQuery.trim()) {
-        params.append("search", searchQuery.trim());
+      if (debouncedSearch.trim()) {
+        params.append("search", debouncedSearch.trim());
       }
 
       if (selectedGenre) {
@@ -134,7 +137,15 @@ export default function StoriesClient({
   // Fetch stories when URL parameters change
   useEffect(() => {
     fetchStories(currentPage);
-  }, [currentPage, selectedType, searchQuery, selectedGenre, sortBy]);
+  }, [currentPage, selectedType, debouncedSearch, selectedGenre, sortBy]);
+
+  // Debounce searchQuery → debouncedSearch (triggers API call after 400ms pause)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
   // Fetch genres on component mount (skip if SSR provided)
   useEffect(() => {
@@ -154,6 +165,7 @@ export default function StoriesClient({
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
+    setDebouncedSearch(searchQuery); // bypass debounce on explicit submit
     updateURL({
       search: searchQuery,
       type: selectedType,
@@ -241,6 +253,7 @@ export default function StoriesClient({
 
   const clearFilters = () => {
     setSearchQuery("");
+    setDebouncedSearch("");
     setSelectedType("");
     setSelectedGenre("");
     setSortBy("createdAt");

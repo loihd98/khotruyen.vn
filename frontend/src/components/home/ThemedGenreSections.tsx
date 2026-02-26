@@ -167,9 +167,10 @@ const ThemedGenreSections: React.FC<ThemedGenreSectionsProps> = ({ initialSectio
 
   return (
     <div className="space-y-10 py-4">
-      {THEMED_SECTIONS.map((section) => {
+      {THEMED_SECTIONS.map((section: any) => {
         const key = `${section.type}-${section.genre || section.category}`;
         const stories = sectionData[key] || [];
+        console.log(JSON.stringify(sectionData[key]));
         const isLoading = loading[key];
 
         // Don't render section if no data and not loading
@@ -210,7 +211,7 @@ const ThemedGenreSections: React.FC<ThemedGenreSectionsProps> = ({ initialSectio
               renderSkeletons(6)
             ) : (
               <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4">
-                {stories.map((story) => renderStoryCard(story))}
+                {/* {stories?.map((story) => renderStoryCard(story))} */}
               </div>
             )}
           </section>

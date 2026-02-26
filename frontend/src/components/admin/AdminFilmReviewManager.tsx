@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { toast } from "react-hot-toast";
 import apiClient from "@/utils/api";
-import { AdminFilmReviewForm } from "./AdminFilmReviewForm"; // Update this path if the file is located elsewhere or has a different name
+import AdminFilmReviewForm from "./AdminFilmReviewForm";
 
 interface AffiliateLink {
   id: string;
@@ -578,11 +578,28 @@ const AdminFilmReviewManager: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                  {reviews.map((review) => (
+                  {reviews.map((review, index) => (
                     <tr
                       key={review.id}
-                      className="hover:bg-gray-50 dark:hover:bg-gray-700"
+                      className={`hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors ${
+                        selectedIds.has(review.id)
+                          ? "bg-blue-50 dark:bg-blue-900/10"
+                          : ""
+                      }`}
                     >
+                      {/* Per-row checkbox */}
+                      <td className="px-3 py-4 text-center w-10">
+                        <input
+                          type="checkbox"
+                          checked={selectedIds.has(review.id)}
+                          onChange={() => toggleSelectRow(review.id)}
+                          className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                        />
+                      </td>
+                      {/* Row number */}
+                      <td className="px-3 py-4 text-center w-10 text-xs text-gray-400 dark:text-gray-500 font-mono">
+                        {(pagination.page - 1) * pagination.limit + index + 1}
+                      </td>
                       <td className="px-6 py-4">
                         <div className="flex items-center">
                           {review.thumbnailUrl ? (

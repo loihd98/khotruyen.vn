@@ -83,13 +83,16 @@ const AdminCommentManager: React.FC<AdminCommentManagerProps> = ({
       setLoading(true);
       setError(null);
 
-      const response = await adminAPI.getComments(pageNum, 20);
+      const response = await adminAPI.getComments(pageNum, 20) as any;
 
-      if (response.data) {
-        setComments(response.data.data as CommentWithRelations[]);
-        setPage(response.data.pagination.page);
-        setTotalPages(response.data.pagination.pages);
-        setTotalComments(response.data.pagination.total);
+      // Backend returns { data: [...], pagination: {...} } directly (not wrapped in ApiResponse)
+      const list = response?.data ?? response?.comments ?? [];
+      const pag = response?.pagination;
+      setComments(list as CommentWithRelations[]);
+      if (pag) {
+        setPage(pag.page);
+        setTotalPages(pag.pages);
+        setTotalComments(pag.total);
       }
     } catch (err: any) {
       console.error("Error loading comments:", err);

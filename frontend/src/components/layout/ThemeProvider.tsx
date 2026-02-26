@@ -14,20 +14,30 @@ export default function ThemeProvider({
   const theme = useSelector((state: RootState) => state.ui.theme);
 
   useEffect(() => {
-    // Check if this is the first load and no theme preference is stored
-    const storedTheme = localStorage.getItem("persist:ui");
-    if (!storedTheme) {
-      // Detect system theme preference
-      const systemTheme = window.matchMedia("(prefers-color-scheme: dark)")
-        .matches
-        ? "dark"
-        : "light";
-      dispatch(setTheme(systemTheme));
+    // One-time migration: if user never explicitly chose a theme, reset to dark default
+    const userChoseTheme = localStorage.getItem("user_theme_choice");
+
+    try {
+      const persisted = localStorage.getItem("persist:ui");
+      let resolvedTheme: "dark" | "light" = "dark";
+
+      if (persisted && userChoseTheme) {
+        // Only respect persisted theme if user explicitly toggled it
+        const parsed = JSON.parse(persisted);
+        if (parsed.theme) {
+          resolvedTheme = JSON.parse(parsed.theme) as "dark" | "light";
+        }
+      }
+      // else: no user choice → always dark
+
+      dispatch(setTheme(resolvedTheme));
+    } catch {
+      dispatch(setTheme("dark"));
     }
   }, [dispatch]);
 
   useEffect(() => {
-    // Apply theme to document
+    // Apply theme class to <html> whenever Redux theme changes
     if (theme === "dark") {
       document.documentElement.classList.add("dark");
     } else {
