@@ -1,7 +1,8 @@
-# 🚀 SIMPLE DEPLOYMENT GUIDE - WebTruyen
+﻿# 🚀 SIMPLE DEPLOYMENT GUIDE - WebTruyen
 
-**Domain:** khotruyen.vn  
-**VPS IP:** 180.93.138.93  
+**Domain:** vivutruyenhay.com  
+**VPS IP:** 103.199.18.123  
+**OS:** Ubuntu 20.04 LTS  
 **Stack:** Docker + Nginx + PostgreSQL + Node.js + Next.js
 
 ---
@@ -61,15 +62,15 @@ Browser → nginx:80 → {
 
 ## 🌐 PHẦN 2: DEPLOY PRODUCTION (VPS)
 
-### 1. Setup VPS Ubuntu 24.04
+### 1. Setup VPS Ubuntu 20.04
 
 ```bash
 # SSH vào VPS
-ssh root@180.93.138.93
+ssh root@103.199.18.123
 
 # Update system
 sudo apt update && sudo apt upgrade -y
-sudo apt install -y git curl ufw
+sudo apt install -y git curl ufw apt-transport-https ca-certificates gnupg lsb-release
 
 # Mở firewall
 sudo ufw allow OpenSSH
@@ -81,12 +82,20 @@ sudo ufw enable
 ### 2. Install Docker
 
 ```bash
-# Install Docker
+# Install Docker via official script (works on Ubuntu 20.04)
 curl -fsSL https://get.docker.com | sh
 sudo usermod -aG docker $USER
 
-# Install Docker Compose
+# Reload group without logout (or logout/login)
+newgrp docker
+
+# Install Docker Compose plugin (Ubuntu 20.04: must use Docker's repo, not Ubuntu's)
 sudo apt-get install -y docker-compose-plugin
+
+# If docker-compose-plugin not found, install manually:
+# DOCKER_COMPOSE_VERSION=$(curl -s https://api.github.com/repos/docker/compose/releases/latest | grep '"tag_name"' | cut -d'"' -f4)
+# sudo curl -SL "https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-linux-x86_64" -o /usr/local/lib/docker/cli-plugins/docker-compose
+# sudo chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
 
 # Verify
 docker --version
@@ -109,11 +118,11 @@ mkdir -p uploads
 
 ```bash
 # Environment file .env.prod đã có config:
-# - NEXT_PUBLIC_API_URL=https://khotruyen.vn/api
-# - NEXT_PUBLIC_BASE_URL=https://khotruyen.vn
-# - NEXT_PUBLIC_MEDIA_URL=https://khotruyen.vn
-# - BASE_URL=https://khotruyen.vn
-# - CORS_ORIGIN=https://khotruyen.vn
+# - NEXT_PUBLIC_API_URL=https://vivutruyenhay.com/api
+# - NEXT_PUBLIC_BASE_URL=https://vivutruyenhay.com
+# - NEXT_PUBLIC_MEDIA_URL=https://vivutruyenhay.com
+# - BASE_URL=https://vivutruyenhay.com
+# - CORS_ORIGIN=https://vivutruyenhay.com
 
 # ⚠️ QUAN TRỌNG: Đổi các secrets trong .env.prod
 nano .env.prod
@@ -128,14 +137,14 @@ nano .env.prod
 
 Trong domain registrar của bạn, set A record:
 
-- **@** → 180.93.138.93
-- **www** → 180.93.138.93
+- **@** → 103.199.18.123
+- **www** → 103.199.18.123
 
 Verify DNS:
 
 ```bash
-dig +short khotruyen.vn
-# Phải trả về: 180.93.138.93
+dig +short vivutruyenhay.com
+# Phải trả về: 103.199.18.123
 ```
 
 ### 6. Start production containers
@@ -155,14 +164,14 @@ docker compose -f docker-compose.prod.yml logs -f
 
 Trong domain registrar của bạn, set A record:
 
-- **@** → 180.93.138.93
-- **www** → 180.93.138.93
+- **@** → 103.199.18.123
+- **www** → 103.199.18.123
 
 Verify DNS:
 
 ```bash
-dig +short khotruyen.vn
-# Phải trả về: 180.93.138.93
+dig +short vivutruyenhay.com
+# Phải trả về: 103.199.18.123
 ```
 
 ### 5. Start production containers
@@ -179,12 +188,12 @@ docker compose -f docker-compose.prod.yml ps
 
 ```bash
 # Test website HTTP access
-curl -I http://khotruyen.vn
-curl -I http://180.93.138.93
+curl -I http://vivutruyenhay.com
+curl -I http://103.199.18.123
 
 # Test API
-curl http://khotruyen.vn/api/health
-curl http://180.93.138.93/api/health
+curl http://vivutruyenhay.com/api/health
+curl http://103.199.18.123/api/health
 
 # If works, proceed to SSL setup
 ```
@@ -195,7 +204,7 @@ curl http://180.93.138.93/api/health
 # Get SSL certificates
 docker compose -f docker-compose.prod.yml run --rm certbot certonly \
   --webroot --webroot-path=/var/www/certbot \
-  -d khotruyen.vn -d www.khotruyen.vn \
+  -d vivutruyenhay.com -d www.vivutruyenhay.com \
   --email your@email.com --agree-tos --no-eff-email
 
 # Restart nginx để load SSL
@@ -217,10 +226,10 @@ docker compose -f docker-compose.prod.yml run --rm backend npx prisma migrate de
 
 ### 10. Verify production website
 
-- **HTTPS:** https://khotruyen.vn
-- **HTTP redirect:** http://khotruyen.vn → https://khotruyen.vn
-- **API:** https://khotruyen.vn/api/health
-- **Uploads:** https://khotruyen.vn/uploads/* (static files)
+- **HTTPS:** https://vivutruyenhay.com
+- **HTTP redirect:** http://vivutruyenhay.com → https://vivutruyenhay.com
+- **API:** https://vivutruyenhay.com/api/health
+- **Uploads:** https://vivutruyenhay.com/uploads/* (static files)
 
 ### 11. Production Architecture
 
@@ -253,10 +262,10 @@ docker compose -f docker-compose.prod.yml logs -f frontend
 
 ```bash
 # Health check
-curl -i https://khotruyen.vn/api/health
+curl -i https://vivutruyenhay.com/api/health
 
 # From browser console
-fetch('https://khotruyen.vn/api/health')
+fetch('https://vivutruyenhay.com/api/health')
 ```
 
 ### Restart services
@@ -301,7 +310,7 @@ docker compose -f docker-compose.prod.yml restart backend
 
 ```bash
 # Check certificate files
-docker compose -f docker-compose.prod.yml exec nginx ls -la /etc/letsencrypt/live/khotruyen.vn/
+docker compose -f docker-compose.prod.yml exec nginx ls -la /etc/letsencrypt/live/vivutruyenhay.com/
 
 # Restart nginx
 docker compose -f docker-compose.prod.yml restart nginx
@@ -309,8 +318,8 @@ docker compose -f docker-compose.prod.yml restart nginx
 
 ### 3. CORS errors
 
-- Check `.env.prod` has correct `CORS_ORIGIN=https://khotruyen.vn`
-- Check `NEXT_PUBLIC_API_URL=https://khotruyen.vn/api`
+- Check `.env.prod` has correct `CORS_ORIGIN=https://vivutruyenhay.com`
+- Check `NEXT_PUBLIC_API_URL=https://vivutruyenhay.com/api`
 
 ### 4. Database connection errors
 
@@ -333,19 +342,19 @@ docker compose -f docker-compose.prod.yml logs postgres
 | `http://localhost/api/*`     | `backend:5000/api/*` | API endpoints   |
 | `http://localhost/uploads/*` | `/uploads/*`         | Static files    |
 
-### Production (khotruyen.vn)
+### Production (vivutruyenhay.com)
 
 | URL                              | Proxy To             | Description     |
 | -------------------------------- | -------------------- | --------------- |
-| `https://khotruyen.vn/`          | `frontend:3000`      | Next.js website |
-| `https://khotruyen.vn/api/*`     | `backend:5000/api/*` | API endpoints   |
-| `https://khotruyen.vn/uploads/*` | `/uploads/*`         | Static files    |
+| `https://vivutruyenhay.com/`          | `frontend:3000`      | Next.js website |
+| `https://vivutruyenhay.com/api/*`     | `backend:5000/api/*` | API endpoints   |
+| `https://vivutruyenhay.com/uploads/*` | `/uploads/*`         | Static files    |
 
 ### Frontend API calls:
 
 ```javascript
 // ✅ Production
-const response = await fetch("https://khotruyen.vn/api/stories");
+const response = await fetch("https://vivutruyenhay.com/api/stories");
 
 // ✅ Development (updated - via nginx)
 const response = await fetch("http://localhost/api/stories");
@@ -362,10 +371,10 @@ NEXT_PUBLIC_API_URL=http://localhost/api
 NEXT_PUBLIC_MEDIA_URL=http://localhost
 
 # Production (.env.prod)
-NEXT_PUBLIC_API_URL=https://khotruyen.vn/api
-NEXT_PUBLIC_MEDIA_URL=https://khotruyen.vn
+NEXT_PUBLIC_API_URL=https://vivutruyenhay.com/api
+NEXT_PUBLIC_MEDIA_URL=https://vivutruyenhay.com
 ```
 
 ---
 
-**🎉 HOÀN TẤT!** Website đã sẵn sàng tại https://khotruyen.vn
+**🎉 HOÀN TẤT!** Website đã sẵn sàng tại https://vivutruyenhay.com

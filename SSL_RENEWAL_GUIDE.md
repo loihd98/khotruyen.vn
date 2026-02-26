@@ -1,10 +1,10 @@
-# SSL Certificate Renewal Guide for khotruyen.vn
+﻿# SSL Certificate Renewal Guide for vivutruyenhay.com
 
 ## Overview
-This guide provides the exact step-by-step commands for renewing Let's Encrypt SSL certificates for khotruyen.vn.
+This guide provides the exact step-by-step commands for renewing Let's Encrypt SSL certificates for vivutruyenhay.com.
 
 **Certificate Information:**
-- Domain: khotruyen.vn, www.khotruyen.vn
+- Domain: vivutruyenhay.com, www.vivutruyenhay.com
 - Provider: Let's Encrypt
 - Validity: 90 days
 - Renewal Recommended: Every 60-80 days
@@ -34,29 +34,29 @@ total 16
 drwx------    3 root     root          4096 Oct  5 19:14 .
 drwxr-xr-x    7 root     root          4096 Oct  9 12:59 ..
 -rw-r--r--    1 root     root           740 Oct  5 19:14 README
-drwxr-xr-x    2 root     root          4096 Oct  5 19:14 khotruyen.vn
+drwxr-xr-x    2 root     root          4096 Oct  5 19:14 vivutruyenhay.com
 ```
 
 ```bash
 # Check certificate expiration dates
-docker run --rm -v webtruyen_certbot-certs:/certs alpine/openssl x509 -in /certs/live/khotruyen.vn/fullchain.pem -noout -dates -subject
+docker run --rm -v webtruyen_certbot-certs:/certs alpine/openssl x509 -in /certs/live/vivutruyenhay.com/fullchain.pem -noout -dates -subject
 ```
 
 **Expected Output:**
 ```
 notBefore=Oct  5 18:15:34 2025 GMT
 notAfter=Jan  3 18:15:33 2026 GMT
-subject=CN=khotruyen.vn
+subject=CN=vivutruyenhay.com
 ```
 
 ```bash
 # Check certbot configuration
-docker run --rm -v webtruyen_certbot-certs:/certs alpine cat /certs/renewal/khotruyen.vn.conf
+docker run --rm -v webtruyen_certbot-certs:/certs alpine cat /certs/renewal/vivutruyenhay.com.conf
 ```
 
 ```bash
 # Check certificate from external perspective
-curl -vI https://khotruyen.vn 2>&1 | grep -E "expire|subject|issuer"
+curl -vI https://vivutruyenhay.com 2>&1 | grep -E "expire|subject|issuer"
 ```
 
 **If certificate is expired, you'll see:**
@@ -92,13 +92,13 @@ docker compose -f docker-compose.prod.yml run --rm certbot renew --force-renewal
 Saving debug log to /var/log/letsencrypt/letsencrypt.log
 
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-Processing /etc/letsencrypt/renewal/khotruyen.vn.conf
+Processing /etc/letsencrypt/renewal/vivutruyenhay.com.conf
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-Renewing an existing certificate for khotruyen.vn and www.khotruyen.vn
+Renewing an existing certificate for vivutruyenhay.com and www.vivutruyenhay.com
 
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 Congratulations, all renewals succeeded: 
-  /etc/letsencrypt/live/khotruyen.vn/fullchain.pem (success)
+  /etc/letsencrypt/live/vivutruyenhay.com/fullchain.pem (success)
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ```
 
@@ -119,7 +119,7 @@ docker compose -f docker-compose.prod.yml exec nginx nginx -s reload
 
 ```bash
 # Check new certificate expiration (should be 90 days from now)
-docker run --rm -v webtruyen_certbot-certs:/certs alpine/openssl x509 -in /certs/live/khotruyen.vn/fullchain.pem -noout -dates
+docker run --rm -v webtruyen_certbot-certs:/certs alpine/openssl x509 -in /certs/live/vivutruyenhay.com/fullchain.pem -noout -dates
 ```
 
 **Expected Output:**
@@ -137,14 +137,14 @@ notAfter=Apr  4 14:50:55 2026 GMT
 ```bash
 cd /opt/webtruyen
 docker run --rm -v webtruyen_certbot-certs:/certs alpine ls -la /certs/live/
-docker run --rm -v webtruyen_certbot-certs:/certs alpine/openssl x509 -in /certs/live/khotruyen.vn/fullchain.pem -noout -dates -subject
-docker run --rm -v webtruyen_certbot-certs:/certs alpine cat /certs/renewal/khotruyen.vn.conf
-curl -vI https://khotruyen.vn 2>&1 | grep -E "expire|subject|issuer"
+docker run --rm -v webtruyen_certbot-certs:/certs alpine/openssl x509 -in /certs/live/vivutruyenhay.com/fullchain.pem -noout -dates -subject
+docker run --rm -v webtruyen_certbot-certs:/certs alpine cat /certs/renewal/vivutruyenhay.com.conf
+curl -vI https://vivutruyenhay.com 2>&1 | grep -E "expire|subject|issuer"
 mkdir -p ~/ssl-backup-$(date +%Y%m%d)
 docker run --rm -v webtruyen_certbot-certs:/certs -v ~/ssl-backup-$(date +%Y%m%d):/backup alpine sh -c "cp -r /certs/* /backup/"
 docker compose -f docker-compose.prod.yml run --rm certbot renew --force-renewal
 docker compose -f docker-compose.prod.yml exec nginx nginx -s reload
-docker run --rm -v webtruyen_certbot-certs:/certs alpine/openssl x509 -in /certs/live/khotruyen.vn/fullchain.pem -noout -dates
+docker run --rm -v webtruyen_certbot-certs:/certs alpine/openssl x509 -in /certs/live/vivutruyenhay.com/fullchain.pem -noout -dates
 ```
 
 ---
@@ -226,13 +226,13 @@ systemctl list-timers certbot-renew.timer
 
 **Symptoms:**
 ```
-Challenge failed for domain khotruyen.vn
+Challenge failed for domain vivutruyenhay.com
 ```
 
 **Solution:**
 ```bash
 # Check if port 80 is accessible
-curl -I http://khotruyen.vn/.well-known/acme-challenge/test
+curl -I http://vivutruyenhay.com/.well-known/acme-challenge/test
 
 # Verify nginx is serving certbot webroot
 docker compose -f docker-compose.prod.yml exec nginx ls -la /var/www/certbot
@@ -241,7 +241,7 @@ docker compose -f docker-compose.prod.yml exec nginx ls -la /var/www/certbot
 docker compose -f docker-compose.prod.yml logs nginx | tail -50
 
 # Ensure DNS is pointing correctly
-nslookup khotruyen.vn
+nslookup vivutruyenhay.com
 ```
 
 ### Issue 2: Nginx Fails to Reload
@@ -274,14 +274,14 @@ docker compose -f docker-compose.prod.yml start nginx
 # Clear browser cache and test in incognito mode
 
 # Verify certificate files were actually updated
-docker run --rm -v webtruyen_certbot-certs:/certs alpine ls -la /certs/live/khotruyen.vn/
+docker run --rm -v webtruyen_certbot-certs:/certs alpine ls -la /certs/live/vivutruyenhay.com/
 ```
 
 ### Issue 4: Rate Limit Exceeded
 
 **Symptoms:**
 ```
-too many certificates already issued for: khotruyen.vn
+too many certificates already issued for: vivutruyenhay.com
 ```
 
 **Solution:**
@@ -309,7 +309,7 @@ docker run --rm \
 docker compose -f docker-compose.prod.yml start nginx
 
 # 4. Verify site works
-curl -I https://khotruyen.vn
+curl -I https://vivutruyenhay.com
 ```
 
 ---
@@ -323,7 +323,7 @@ curl -I https://khotruyen.vn
 **Check:**
 ```bash
 # Verify port 80 is accessible
-curl -I http://khotruyen.vn/.well-known/acme-challenge/
+curl -I http://vivutruyenhay.com/.well-known/acme-challenge/
 
 # Check nginx is serving certbot webroot
 docker compose -f docker-compose.prod.yml exec nginx ls -la /var/www/certbot
@@ -342,7 +342,7 @@ Quick Certificate Check
 
 ```bash
 # Check when certificate expires
-docker run --rm -v webtruyen_certbot-certs:/certs alpine/openssl x509 -in /certs/live/khotruyen.vn/fullchain.pem -noout -dates
+docker run --rm -v webtruyen_certbot-certs:/certs alpine/openssl x509 -in /certs/live/vivutruyenhay.com/fullchain.pem -noout -dates
 ```
 
 ---
