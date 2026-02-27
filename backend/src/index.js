@@ -14,28 +14,10 @@ app.use(
   }),
 );
 
-// CORS - restrict to frontend domain
-const allowedOrigins = [
-  config.baseUrl,
-  config.corsOrigin,
-  'https://vivutruyenhay.com',
-  'https://www.vivutruyenhay.com',
-  'http://vivutruyenhay.com',
-  'http://www.vivutruyenhay.com',
-].filter(Boolean);
-if (config.nodeEnv !== 'production') {
-  allowedOrigins.push('http://localhost', 'http://localhost:3000', 'http://localhost:5000');
-}
+// CORS
 app.use(
   cors({
-    origin: (origin, callback) => {
-      // Allow requests with no origin (server-to-server, curl, etc.)
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(null, false);
-      }
-    },
+    origin: true,
     credentials: true,
   }),
 );
