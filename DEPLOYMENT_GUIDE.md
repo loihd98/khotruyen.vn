@@ -36,10 +36,10 @@ Before starting, ensure you have:
 
 At your domain registrar (e.g., Namecheap, GoDaddy, Cloudflare), create these DNS records:
 
-| Type | Host | Value | TTL |
-|------|------|-------|-----|
-| A | @ | 103.199.18.123 | 300 |
-| A | www | 103.199.18.123 | 300 |
+| Type | Host | Value          | TTL |
+| ---- | ---- | -------------- | --- |
+| A    | @    | 103.199.18.123 | 300 |
+| A    | www  | 103.199.18.123 | 300 |
 
 Wait 5-15 minutes for DNS propagation, then verify:
 
@@ -84,6 +84,7 @@ ufw status
 ```
 
 Expected output:
+
 ```
 Status: active
 To                         Action      From
@@ -137,6 +138,7 @@ docker compose version
 ```
 
 Expected output (versions may differ):
+
 ```
 Docker version 27.x.x
 Docker Compose version v2.x.x
@@ -207,6 +209,7 @@ FRONTEND_PORT=3000
 ```
 
 Generate strong secrets:
+
 ```bash
 # Run these commands and paste the output into .env.prod
 echo "JWT_SECRET: $(openssl rand -base64 48)"
@@ -272,6 +275,7 @@ docker compose -f docker-compose.prod.yml up -d --build
 ```
 
 This will:
+
 1. Pull/build all Docker images (PostgreSQL, backend, frontend, Nginx)
 2. Start PostgreSQL and wait until healthy
 3. Start the backend (runs database migrations automatically)
@@ -287,6 +291,7 @@ docker compose -f docker-compose.prod.yml ps
 ```
 
 All services should show `Up` or `Up (healthy)`:
+
 ```
 NAME          STATUS
 postgres      Up (healthy)
@@ -321,6 +326,7 @@ docker compose -f docker-compose.prod.yml run --rm certbot certonly \
 ```
 
 Expected output:
+
 ```
 Successfully received certificate.
 Certificate is saved at: /etc/letsencrypt/live/vivutruyenhay.com/fullchain.pem
@@ -337,6 +343,7 @@ git checkout nginx/prod.conf
 ```
 
 This restores the production config that includes:
+
 - HTTP → HTTPS redirect
 - www → non-www redirect
 - SSL with security headers
@@ -371,7 +378,7 @@ The seed script creates initial genres, sample stories, and an admin account:
 cd /opt/webtruyen
 
 # Run the full seed (genres + sample stories + admin account)
-docker compose -f docker-compose.prod.yml exec backend node src/scripts/seed.js
+docker compose -f docker-compose.prod.yml exec backend node src/scripts/seed-users-only.js
 ```
 
 ### 7.2 Seed Film Reviews (Optional)
@@ -438,15 +445,15 @@ curl -vI https://vivutruyenhay.com 2>&1 | grep -E "expire|subject|issuer"
 
 ### 8.2 Feature Checklist
 
-| Feature | URL | Expected |
-|---------|-----|----------|
-| Homepage | https://vivutruyenhay.com | Loads with stories |
-| API Health | https://vivutruyenhay.com/api/health | `{"status":"OK"}` |
-| Registration | https://vivutruyenhay.com/auth/register | Registration form |
-| Login | https://vivutruyenhay.com/auth/login | Login form |
-| Admin Panel | https://vivutruyenhay.com/admin | Admin dashboard (requires admin login) |
-| Sitemap | https://vivutruyenhay.com/sitemap.xml | XML sitemap |
-| SSL | https://vivutruyenhay.com | Green padlock |
+| Feature      | URL                                     | Expected                               |
+| ------------ | --------------------------------------- | -------------------------------------- |
+| Homepage     | https://vivutruyenhay.com               | Loads with stories                     |
+| API Health   | https://vivutruyenhay.com/api/health    | `{"status":"OK"}`                      |
+| Registration | https://vivutruyenhay.com/auth/register | Registration form                      |
+| Login        | https://vivutruyenhay.com/auth/login    | Login form                             |
+| Admin Panel  | https://vivutruyenhay.com/admin         | Admin dashboard (requires admin login) |
+| Sitemap      | https://vivutruyenhay.com/sitemap.xml   | XML sitemap                            |
+| SSL          | https://vivutruyenhay.com               | Green padlock                          |
 
 ### 8.3 Check Logs If Issues
 
@@ -488,6 +495,7 @@ crontab -e
 ```
 
 Add this line (runs at 3 AM every day):
+
 ```
 0 3 * * * /opt/webtruyen/renew-ssl.sh
 ```
@@ -552,9 +560,11 @@ chmod +x /opt/webtruyen/backup.sh
 ```
 
 Add to cron (runs at 2 AM daily):
+
 ```bash
 crontab -e
 ```
+
 ```
 0 2 * * * /opt/webtruyen/backup.sh
 ```
@@ -871,6 +881,7 @@ docker system df
 ```
 
 **Output ví dụ:**
+
 ```
 TYPE            TOTAL    ACTIVE   SIZE      RECLAIMABLE
 Images          12       4        3.2GB     1.8GB (56%)
@@ -992,6 +1003,7 @@ Thêm vào cron (chạy mỗi Chủ Nhật lúc 4 giờ sáng):
 ```bash
 crontab -e
 ```
+
 ```
 0 4 * * 0 /opt/webtruyen/cleanup.sh >> /var/log/webtruyen-cleanup.log 2>&1
 ```
@@ -1015,16 +1027,16 @@ Sau khi setup đầy đủ, crontab của bạn sẽ trông như thế này:
 
 ## Quick Reference
 
-| Command | Description |
-|---------|-------------|
-| `docker compose -f docker-compose.prod.yml up -d --build` | Build & start all |
-| `docker compose -f docker-compose.prod.yml down` | Stop all (giữ data) |
-| `docker compose -f docker-compose.prod.yml ps` | Check status |
-| `docker compose -f docker-compose.prod.yml logs -f` | View logs |
-| `docker compose -f docker-compose.prod.yml restart nginx` | Restart Nginx |
-| `docker compose -f docker-compose.prod.yml up -d --build --no-deps backend` | Rebuild chỉ backend |
-| `docker compose -f docker-compose.prod.yml exec backend npx prisma migrate deploy` | Chạy migration |
-| `docker compose -f docker-compose.prod.yml exec backend node src/scripts/seed.js` | Seed DB |
-| `docker compose -f docker-compose.prod.yml exec postgres psql -U webtruyen_user -d web_truyen` | DB shell |
-| `docker image prune -f` | Dọn images cũ |
-| `docker system df` | Xem dung lượng Docker |
+| Command                                                                                        | Description           |
+| ---------------------------------------------------------------------------------------------- | --------------------- |
+| `docker compose -f docker-compose.prod.yml up -d --build`                                      | Build & start all     |
+| `docker compose -f docker-compose.prod.yml down`                                               | Stop all (giữ data)   |
+| `docker compose -f docker-compose.prod.yml ps`                                                 | Check status          |
+| `docker compose -f docker-compose.prod.yml logs -f`                                            | View logs             |
+| `docker compose -f docker-compose.prod.yml restart nginx`                                      | Restart Nginx         |
+| `docker compose -f docker-compose.prod.yml up -d --build --no-deps backend`                    | Rebuild chỉ backend   |
+| `docker compose -f docker-compose.prod.yml exec backend npx prisma migrate deploy`             | Chạy migration        |
+| `docker compose -f docker-compose.prod.yml exec backend node src/scripts/seed.js`              | Seed DB               |
+| `docker compose -f docker-compose.prod.yml exec postgres psql -U webtruyen_user -d web_truyen` | DB shell              |
+| `docker image prune -f`                                                                        | Dọn images cũ         |
+| `docker system df`                                                                             | Xem dung lượng Docker |
