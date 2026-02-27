@@ -186,17 +186,27 @@ dig +short vivutruyenhay.com
 # Phải trả về: 103.199.18.123
 ```
 
-### 6. Start production containers
+### 6. Start production containers (first time — no SSL yet)
+
+> ⚠️ Nginx requires SSL certs to start. On a fresh VPS the certs don't exist yet,  
+> so we start backend/frontend first, then use a temporary HTTP-only nginx to pass  
+> the certbot challenge, then switch to the full SSL config.
 
 ```bash
-# Build và start production
-docker compose -f docker-compose.prod.yml up -d --build
+# 1. Build and start postgres, backend, frontend (NOT nginx yet)
+docker compose -f docker-compose.prod.yml up -d --build postgres backend frontend
 
-# Check containers
+# Check they're running
 docker compose -f docker-compose.prod.yml ps
 
-# Check logs
-docker compose -f docker-compose.prod.yml logs -f
+# 2. Start a temporary HTTP-only nginx for certbot challenge
+#    (uses temp-http.conf which has no SSL requirement)
+docker run -d --name nginx-init \
+  --network webtruyen_app-network \
+  -p 80:80 \
+  -v /opt/webtruyen/nginx/temp-http.conf:/etc/nginx/conf.d/default.conf:ro \
+  -v webtruyen_certbot-web:/var/www/certbot:rw \
+  nginx:alpine
 ```
 
 ### 4. Configure DNS
@@ -240,17 +250,20 @@ curl http://103.199.18.123/api/health
 ### 8. Setup SSL với Let's Encrypt
 
 ```bash
-# Get SSL certificates
+# Get SSL certificates (temp nginx is serving port 80 for the challenge)
 docker compose -f docker-compose.prod.yml run --rm certbot certonly \
   --webroot --webroot-path=/var/www/certbot \
   -d vivutruyenhay.com -d www.vivutruyenhay.com \
   --email your@email.com --agree-tos --no-eff-email
 
-# Restart nginx để load SSL
-docker compose -f docker-compose.prod.yml restart nginx
+# Stop and remove temp nginx
+docker stop nginx-init && docker rm nginx-init
 
-# Wait for nginx to restart
-sleep 5
+# Start the real nginx with SSL (certs now exist)
+docker compose -f docker-compose.prod.yml up -d nginx
+
+# Verify nginx started correctly (should show "running")
+docker compose -f docker-compose.prod.yml ps nginx
 ```
 
 ### 9. Run database migrations
