@@ -1,266 +1,317 @@
-# 📚 vivutruyenhay.com - Modern Story Reading Platform
+# vivutruyenhay.com
 
-A comprehensive web application for reading stories and novels online with advanced features and professional UI/UX.
-
-## 🌟 Features
-
-### User Features
-
-- 🔐 **Secure Authentication** - JWT-based login/register with refresh tokens
-- 📖 **Story Reading** - Clean, responsive reading interface
-- 🔊 **Audio Support** - Listen to stories with built-in audio player
-- 📑 **Bookmarks** - Save and organize favorite stories
-- 💬 **Comments System** - Professional nested comments with replies
-- 🌙 **Theme Support** - Dark/Light mode with persistence
-- 📱 **Mobile Responsive** - Optimized for all devices
-
-### Admin Features
-
-- 📊 **Admin Dashboard** - Comprehensive content management
-- ✍️ **Story Management** - Create, edit, and manage stories
-- 📝 **Chapter Editor** - Rich text editor with media support
-- 👥 **User Management** - User roles and permissions
-- 💬 **Comment Moderation** - Approve/reject comments
-- 📈 **Analytics** - View counts and user engagement
-
-### Technical Features
-
-- ⚡ **High Performance** - Optimized caching and lazy loading
-- 🔒 **Security** - Rate limiting, CORS, and input validation
-- 🐳 **Docker Ready** - Full containerization support
-- 🔄 **Auto Backup** - Automated database backups
-- 📊 **Monitoring** - Health checks and logging
-- 🌐 **SEO Optimized** - Meta tags and sitemap generation
-
-## 🛠️ Tech Stack
-
-### Frontend
-
-- **Next.js 14** - React framework with App Router
-- **TypeScript** - Type-safe development
-- **Tailwind CSS** - Utility-first styling
-- **Redux Toolkit** - State management
-- **Redux Persist** - State persistence
-
-### Backend
-
-- **Node.js + Express** - Server framework
-- **PostgreSQL** - Primary database
-- **Prisma ORM** - Database toolkit
-- **JWT** - Authentication tokens
-- **Multer** - File upload handling
-
-### Infrastructure
-
-- **Docker** - Containerization
-- **Nginx** - Reverse proxy & load balancer
-- **SSL/TLS** - HTTPS security
-- **Let's Encrypt** - Free SSL certificates
-
-## 🚀 Quick Start
-
-### Prerequisites
-
-- Docker & Docker Compose
-- Git
-- Domain name (for production)
-
-### Local Development
-
-1. **Clone Repository**
-
-   ```bash
-   git clone https://github.com/loihd98/webtruyen.git
-   cd webtruyen
-   ```
-
-2. **Setup Environment**
-
-   ```bash
-   cp .env.dev.example .env.dev
-   # Edit .env.dev with your local settings
-   ```
-
-3. **Start Development Server**
-
-   ```bash
-   docker-compose -f docker-compose.dev.yml up --build
-   ```
-
-4. **Access Application**
-   - Frontend: http://localhost:3000
-   - Backend API: http://localhost:5000
-   - Admin Panel: http://localhost:3000/admin
-   - Nginx: http://localhost:8080
-
-### Production Deployment
-
-See [PRODUCTION_DEPLOYMENT_GUIDE.md](./PRODUCTION_DEPLOYMENT_GUIDE.md) for detailed production setup instructions.
-
-**Quick Production Setup:**
-
-1. **Setup Environment**
-
-   ```bash
-   cp .env.prod.example .env.prod
-   # Configure production values
-   ```
-
-2. **Deploy**
-   ```bash
-   docker-compose -f docker-compose.prod.yml up --build -d
-   ```
-
-## 📁 Project Structure
-
-```
-webtruyen/
-├── 📁 backend/                    # Node.js Backend
-│   ├── 📁 src/
-│   │   ├── 📁 controllers/        # API controllers
-│   │   ├── 📁 routes/             # Express routes
-│   │   ├── 📁 middleware/         # Custom middleware
-│   │   ├── 📁 utils/              # Utilities
-│   │   └── 📄 index.js            # Server entry
-│   ├── 📁 prisma/                 # Database schema
-│   └── 📁 uploads/                # File storage
-├── 📁 frontend/                   # Next.js Frontend
-│   ├── 📁 src/
-│   │   ├── 📁 app/                # App Router pages
-│   │   ├── 📁 components/         # React components
-│   │   ├── 📁 hooks/              # Custom hooks
-│   │   ├── 📁 store/              # Redux store
-│   │   └── 📁 utils/              # Client utilities
-│   └── 📁 public/                 # Static assets
-├── 📁 nginx/                      # Nginx configs
-├── 📁 ssl/                        # SSL certificates
-├── 📄 docker-compose.prod.yml     # Production config
-├── 📄 docker-compose.dev.yml      # Development config
-├── 📄 .env.prod.example           # Production env template
-├── 📄 .env.dev.example            # Development env template
-└── 📄 README.md                   # This file
-```
-
-## 🔧 Configuration
-
-### Environment Variables
-
-#### Production (.env.prod)
-
-- `DATABASE_URL` - PostgreSQL connection string
-- `JWT_SECRET` - JWT signing secret
-- `DOMAIN` - Your domain name
-- `FRONTEND_URL` - Frontend URL
-- `BACKEND_URL` - Backend API URL
-
-#### Development (.env.dev)
-
-- Same as production but with localhost URLs
-- Relaxed security settings for development
-
-### Docker Compose Files
-
-- **docker-compose.prod.yml** - Production with SSL, monitoring, and security
-- **docker-compose.dev.yml** - Development with hot reload and debugging
-- **docker-compose.yml** - Legacy (use specific env files instead)
-
-## 📊 API Documentation
-
-### Authentication
-
-- `POST /api/auth/login` - User login
-- `POST /api/auth/register` - User registration
-- `POST /api/auth/refresh` - Refresh access token
-
-### Stories
-
-- `GET /api/stories` - List stories with pagination
-- `GET /api/stories/:slug` - Get story details
-- `POST /api/stories` - Create story (admin)
-- `PUT /api/stories/:id` - Update story (admin)
-
-### Chapters
-
-- `GET /api/chapters/:id` - Get chapter content
-- `POST /api/chapters` - Create chapter (admin)
-- `PUT /api/chapters/:id` - Update chapter (admin)
-
-### Comments
-
-- `GET /api/comments/chapter/:chapterId` - Get chapter comments
-- `POST /api/comments` - Create comment
-- `POST /api/comments/:id/reply` - Reply to comment
-- `PUT /api/comments/:id/approve` - Approve comment (admin)
-
-### Admin
-
-- `GET /api/admin/stats` - Dashboard statistics
-- `GET /api/admin/users` - User management
-- `GET /api/admin/comments` - Comment moderation
-
-## 🔐 Security Features
-
-- **Rate Limiting** - API request throttling
-- **CORS Protection** - Cross-origin request security
-- **Input Validation** - Request data sanitization
-- **SQL Injection Protection** - Prisma ORM safety
-- **XSS Prevention** - Content Security Policy
-- **HTTPS Enforcement** - SSL/TLS encryption
-- **JWT Security** - Secure token handling
-
-## 📈 Monitoring & Maintenance
-
-### Health Checks
-
-- `GET /health` - Application health status
-- Docker health checks for all services
-- Automated service restart on failure
-
-### Backups
-
-- **Automated Daily Backups** - Database and uploads
-- **7-day Retention** - Automatic cleanup
-- **Manual Backup Commands** - See [DATABASE_BACKUP_GUIDE.md](./DATABASE_BACKUP_GUIDE.md)
-
-### Logs
-
-- Application logs: `logs/backend/`
-- Nginx logs: `logs/nginx/`
-- PostgreSQL logs: `logs/postgres/`
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create feature branch: `git checkout -b feature-name`
-3. Make changes and test thoroughly
-4. Commit: `git commit -m "Add feature"`
-5. Push: `git push origin feature-name`
-6. Submit Pull Request
-
-## 📝 Documentation
-
-- [Production Deployment Guide](./PRODUCTION_DEPLOYMENT_GUIDE.md)
-- [Database Backup Guide](./DATABASE_BACKUP_GUIDE.md)
-
-## 🔗 Production Instance
-
-- **Domain:** [vivutruyenhay.com](https://vivutruyenhay.com)
-- **Server:** VPS at 103.199.18.123
-- **SSL:** Let's Encrypt certificates
-- **CDN:** Nginx static file serving
-
-## 📄 License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## 🆘 Support
-
-For issues and questions:
-
-- Create GitHub issue for bugs
-- Check logs for troubleshooting
-- Review documentation guides
+A full-stack web application for reading stories, listening to audio stories, and reviewing films. Built with **Next.js 14**, **Node.js/Express**, **PostgreSQL**, and **Docker**.
 
 ---
 
-**Built with ❤️ by the vivutruyenhay.com Team**
+## Features
+
+**User-facing:**
+- Story reading with clean, responsive interface
+- Audio story playback with built-in player
+- Film review browsing and commenting
+- User registration/login (JWT + OAuth)
+- Bookmarks, comments, dark/light theme
+
+**Admin:**
+- Dashboard with analytics
+- Story, chapter, and genre management
+- Film review and category management
+- Comment moderation, user management
+- Affiliate link management
+
+---
+
+## Tech Stack
+
+| Layer | Technology |
+|-------|-----------|
+| Frontend | Next.js 14 (App Router), TypeScript, Tailwind CSS, Redux Toolkit |
+| Backend | Node.js, Express, Prisma ORM |
+| Database | PostgreSQL 15 |
+| Infra | Docker, Nginx, Let's Encrypt SSL |
+
+---
+
+## Project Structure
+
+```
+webtruyen/
+├── backend/
+│   ├── src/
+│   │   ├── controllers/    # API business logic
+│   │   ├── routes/         # Express route definitions
+│   │   ├── middleware/      # Auth middleware
+│   │   ├── lib/            # Shared modules (Prisma client)
+│   │   ├── utils/          # Helpers (JWT, validation)
+│   │   ├── scripts/        # Seed scripts, health check
+│   │   ├── config/         # App config, OAuth passport
+│   │   └── index.js        # Server entry point
+│   └── prisma/             # Database schema & migrations
+├── frontend/
+│   ├── src/
+│   │   ├── app/            # Next.js App Router pages
+│   │   ├── components/     # React components
+│   │   ├── store/          # Redux state management
+│   │   ├── hooks/          # Custom React hooks
+│   │   ├── types/          # TypeScript type definitions
+│   │   ├── utils/          # Client utilities & API client
+│   │   └── contexts/       # React contexts
+│   ├── public/             # Static assets (robots.txt, manifest)
+│   └── styles/             # Global CSS
+├── nginx/                  # Nginx configs (prod + dev)
+├── docker-compose.prod.yml # Production deployment
+├── docker-compose.dev.yml  # Local development
+├── DEPLOYMENT_GUIDE.md     # Full deployment instructions
+└── .env.prod.example       # Environment template
+```
+
+---
+
+## Quick Start (Local Development)
+
+### Prerequisites
+
+- Docker & Docker Compose installed
+- Git
+
+### Setup
+
+```bash
+git clone https://github.com/loihd98/vivutruyenhay.git
+cd vivutruyenhay
+
+# Create environment file
+cp .env.dev.example .env.dev
+
+# Start all services
+docker compose -f docker-compose.dev.yml up -d --build
+
+# Wait for services to start, then seed database
+docker compose -f docker-compose.dev.yml exec backend node src/scripts/seed.js
+```
+
+### Access
+
+| Service | URL |
+|---------|-----|
+| Website | http://localhost |
+| API | http://localhost/api |
+| API direct | http://localhost:5000 |
+| Frontend direct | http://localhost:3000 |
+
+### Architecture (Development)
+
+```
+Browser → nginx:80 → {
+  /api/*      → backend:5000
+  /uploads/*  → static files
+  /*          → frontend:3000 (hot reload)
+}
+```
+
+---
+
+## Production Deployment
+
+See **[DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md)** for complete A-to-Z instructions covering:
+
+- Fresh Ubuntu 20.04 VPS setup
+- Docker installation
+- SSL certificate with Let's Encrypt
+- Database seeding & admin account creation
+- Automated backups & SSL renewal
+- Troubleshooting
+
+**Quick deploy (if VPS is already set up):**
+
+```bash
+cd /opt/webtruyen
+git pull origin master
+docker compose -f docker-compose.prod.yml up -d --build
+```
+
+---
+
+## API Reference
+
+### Authentication
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/auth/register` | Register new user |
+| POST | `/api/auth/login` | Login |
+| POST | `/api/auth/refresh` | Refresh access token |
+| GET | `/api/auth/google` | Google OAuth login |
+| GET | `/api/auth/facebook` | Facebook OAuth login |
+
+### Stories
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/stories` | List stories (paginated, filterable) |
+| GET | `/api/stories/:slug` | Get story details |
+| POST | `/api/stories` | Create story (admin) |
+| PUT | `/api/stories/:id` | Update story (admin) |
+| DELETE | `/api/stories/:id` | Delete story (admin) |
+
+### Chapters
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/chapters/:id` | Get chapter content |
+| POST | `/api/chapters` | Create chapter (admin) |
+| PUT | `/api/chapters/:id` | Update chapter (admin) |
+
+### Comments
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/comments/chapters/:chapterId/comments` | Get comments |
+| POST | `/api/comments/chapters/:chapterId/comments` | Create comment |
+| DELETE | `/api/comments/:id` | Delete comment |
+
+### Film Reviews
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/film-reviews` | List film reviews |
+| GET | `/api/film-reviews/:slug` | Get review details |
+| POST | `/api/film-reviews` | Create review (admin) |
+
+### Admin
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/admin/dashboard/stats` | Dashboard statistics |
+| GET | `/api/admin/users` | User management |
+| GET | `/api/admin/comments` | Comment moderation |
+
+### Other
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/health` | Health check |
+| POST | `/api/contact` | Contact form |
+| GET | `/api/bookmarks` | User bookmarks |
+| GET | `/api/media` | Media management |
+
+---
+
+## Environment Variables
+
+### Production (`.env.prod`)
+
+See `.env.prod.example` for the full template. Key variables:
+
+| Variable | Description |
+|----------|-------------|
+| `DATABASE_URL` | PostgreSQL connection string |
+| `JWT_SECRET` | JWT signing secret (generate with `openssl rand -base64 48`) |
+| `JWT_REFRESH_SECRET` | Refresh token secret |
+| `NEXT_PUBLIC_API_URL` | Frontend API URL (baked into build) |
+| `API_URL` | Server-side API URL (Docker internal) |
+| `DOMAIN` | Domain name |
+
+### Development (`.env.dev`)
+
+See `.env.dev.example` for the full template.
+
+---
+
+## SEO
+
+The project includes built-in SEO optimization:
+
+- **Meta tags & Open Graph** — Dynamic per-page titles, descriptions, OG images
+- **Structured data** — JSON-LD schemas (Organization, Website, Book, Article)
+- **Sitemap** — Auto-generated at `/sitemap.xml` from database content
+- **robots.txt** — Configured with proper allow/disallow rules
+- **Progressive Web App** — `manifest.json` with app metadata
+- **Performance** — Gzip compression, static asset caching, image optimization
+
+### SEO Checklist for Production
+
+- [ ] Register on [Google Search Console](https://search.google.com/search-console)
+- [ ] Submit sitemap URL: `https://vivutruyenhay.com/sitemap.xml`
+- [ ] Add Google verification code to `layout.tsx`
+- [ ] (Optional) Set up Google Analytics
+- [ ] (Optional) Create Facebook App for social login & OG debugging
+
+---
+
+## Database
+
+### Schema Overview
+
+| Model | Description |
+|-------|-------------|
+| User | Users with roles (USER/ADMIN), OAuth support |
+| Story | Stories with types (TEXT/AUDIO), genres, status |
+| Chapter | Story chapters with text content or audio URL |
+| Comment | Threaded comments on chapters |
+| Bookmark | User bookmarks for stories/chapters |
+| FilmReview | Film reviews with categories, actors, ratings |
+| FilmComment | Comments on film reviews |
+| Genre | Story genres |
+| FilmCategory | Film categories |
+| FilmActor | Film actors |
+| AffiliateLink | Affiliate links for stories/reviews |
+| Media | Uploaded media files |
+
+### Useful Commands
+
+```bash
+# Run migrations
+docker compose -f docker-compose.prod.yml exec backend npx prisma migrate deploy
+
+# Seed database
+docker compose -f docker-compose.prod.yml exec backend node src/scripts/seed.js
+
+# Open Prisma Studio (dev only)
+docker compose -f docker-compose.dev.yml exec backend npx prisma studio
+
+# Database shell
+docker compose -f docker-compose.prod.yml exec postgres psql -U webtruyen_user -d web_truyen
+```
+
+---
+
+## Backup & Recovery
+
+```bash
+# Create backup
+DATE=$(date +%Y%m%d_%H%M%S)
+docker compose -f docker-compose.prod.yml exec -T postgres \
+  pg_dump -U webtruyen_user web_truyen > backup_$DATE.sql
+
+# Restore backup
+docker compose -f docker-compose.prod.yml exec -T postgres \
+  psql -U webtruyen_user -d web_truyen < backup_YYYYMMDD_HHMMSS.sql
+```
+
+See [DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md#10-database-backup--restore) for automated backup setup.
+
+---
+
+## SSL Certificate
+
+Managed via Let's Encrypt (Certbot) with automatic renewal.
+
+```bash
+# Check certificate expiry
+docker run --rm -v webtruyen_certbot-certs:/certs alpine/openssl x509 \
+  -in /certs/live/vivutruyenhay.com/fullchain.pem -noout -dates
+
+# Force renewal
+docker compose -f docker-compose.prod.yml run --rm certbot renew --force-renewal
+docker compose -f docker-compose.prod.yml restart nginx
+```
+
+See [DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md#9-ssl-auto-renewal) for auto-renewal cron setup.
+
+---
+
+## License
+
+MIT

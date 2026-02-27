@@ -1,8 +1,6 @@
-const { PrismaClient } = require("@prisma/client");
+const prisma = require("../lib/prisma");
 const slugify = require("slugify");
 const validationService = require("../utils/validationService");
-
-const prisma = new PrismaClient();
 
 class AdminController {
   // Dashboard stats

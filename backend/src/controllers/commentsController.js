@@ -1,7 +1,5 @@
-const { PrismaClient } = require("@prisma/client");
+const prisma = require("../lib/prisma");
 const validationService = require("../utils/validationService");
-
-const prisma = new PrismaClient();
 
 class CommentsController {
   // Get comments for a chapter

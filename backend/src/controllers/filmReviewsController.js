@@ -1,7 +1,5 @@
-const { PrismaClient } = require("@prisma/client");
+const prisma = require("../lib/prisma");
 const slugify = require("slugify");
-
-const prisma = new PrismaClient();
 
 class FilmReviewsController {
   // ==================== PUBLIC ENDPOINTS ====================

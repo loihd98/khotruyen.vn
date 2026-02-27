@@ -2,11 +2,10 @@ const express = require("express");
 const cors = require("cors");
 const helmet = require("helmet");
 const rateLimit = require("express-rate-limit");
-const { PrismaClient } = require("@prisma/client");
+const prisma = require("./lib/prisma");
 const config = require("./config");
 
 const app = express();
-const prisma = new PrismaClient();
 
 // Security middleware
 app.use(
@@ -15,21 +14,47 @@ app.use(
   }),
 );
 
-// CORS
+// CORS - restrict to frontend domain
+const allowedOrigins = [
+  config.baseUrl,
+  'https://vivutruyenhay.com',
+  'https://www.vivutruyenhay.com',
+];
+if (config.nodeEnv === 'development') {
+  allowedOrigins.push('http://localhost', 'http://localhost:3000');
+}
 app.use(
   cors({
-    origin: "*",
+    origin: (origin, callback) => {
+      // Allow requests with no origin (server-to-server, curl, etc.)
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(null, false);
+      }
+    },
     credentials: true,
   }),
 );
 
 // Rate limiting
 const limiter = rateLimit({
-  windowMs: 30 * 60 * 1000, // 15 minutes
-  max: 20000, // limit each IP to 100 requests per windowMs
-  message: "Too many requests from this IP, please try again later.",
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 200, // limit each IP to 200 requests per 15 minutes
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Too Many Requests", message: "Too many requests from this IP, please try again later." },
 });
 app.use("/api/", limiter);
+
+// Stricter rate limit for auth endpoints
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20, // 20 attempts per 15 minutes
+  message: { error: "Too Many Requests", message: "Too many login attempts, please try again later." },
+});
+app.use("/api/auth/login", authLimiter);
+app.use("/api/auth/register", authLimiter);
 
 // Body parsing
 app.use(express.json({ limit: "10mb" }));

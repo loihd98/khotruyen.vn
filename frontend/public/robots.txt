@@ -3,6 +3,8 @@ Allow: /
 Disallow: /api/
 Disallow: /admin/
 Disallow: /auth/
+Disallow: /profile/
+Disallow: /bookmarks/
 
 # Sitemaps
 Sitemap: https://vivutruyenhay.com/sitemap.xml
@@ -16,9 +18,13 @@ Allow: /
 Disallow: /api/
 Disallow: /admin/
 Disallow: /auth/
+Disallow: /profile/
+Disallow: /bookmarks/
 
 User-agent: Bingbot
 Allow: /
 Disallow: /api/
 Disallow: /admin/
 Disallow: /auth/
+Disallow: /profile/
+Disallow: /bookmarks/

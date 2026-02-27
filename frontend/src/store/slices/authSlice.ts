@@ -177,8 +177,6 @@ const authSlice = createSlice({
         state.error = null;
       })
       .addCase(loginUser.fulfilled, (state, action) => {
-        console.log("✅ Login successful");
-
         state.isLoading = false;
         const authResponse = action.payload;
         if (authResponse) {
@@ -186,12 +184,6 @@ const authSlice = createSlice({
           state.accessToken = authResponse.accessToken;
           state.refreshToken = authResponse.refreshToken;
           state.isAuthenticated = true;
-
-          console.log("📝 Auth state updated:", {
-            hasUser: !!state.user,
-            userEmail: state.user?.email,
-            isAuthenticated: state.isAuthenticated,
-          });
         }
         state.error = null;
       })
@@ -222,11 +214,10 @@ const authSlice = createSlice({
       })
 
       // Refresh token
-      .addCase(refreshToken.pending, (state) => {
-        console.log("Refresh token pending...");
+      .addCase(refreshToken.pending, () => {
+        // refreshing
       })
       .addCase(refreshToken.fulfilled, (state, action) => {
-        console.log("🔄 Token refresh successful");
         const authResponse = action.payload;
         if (authResponse) {
           state.accessToken = authResponse.accessToken;
@@ -238,7 +229,6 @@ const authSlice = createSlice({
         }
       })
       .addCase(refreshToken.rejected, (state, action) => {
-        console.log("Refresh token rejected:", action.payload);
         state.user = null;
         state.accessToken = null;
         state.refreshToken = null;

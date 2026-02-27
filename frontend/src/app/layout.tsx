@@ -107,9 +107,6 @@ export const metadata: Metadata = {
     // bing: 'your-bing-verification-code',
   },
   category: "entertainment",
-  other: {
-    "fb:app_id": "your-facebook-app-id", // Thêm Facebook App ID của bạn
-  },
 };
 
 export default function RootLayout({

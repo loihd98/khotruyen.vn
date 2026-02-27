@@ -2,10 +2,8 @@ const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
 const { v4: uuidv4 } = require("uuid");
-const { PrismaClient } = require("@prisma/client");
+const prisma = require("../lib/prisma");
 const config = require("../config");
-
-const prisma = new PrismaClient();
 
 // Configure multer for audio files
 const audioStorage = multer.diskStorage({

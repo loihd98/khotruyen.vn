@@ -28,7 +28,7 @@ module.exports = {
   maxFileSize: 100 * 1024 * 1024, // 100MB
 
   // CORS
-  corsOrigin: "*",
+  corsOrigin: process.env.FRONTEND_URL || "https://vivutruyenhay.com",
 
   // Base URL
   baseUrl: process.env.BASE_URL || "http://localhost:3000",

@@ -1,7 +1,5 @@
-const { PrismaClient } = require("@prisma/client");
+const prisma = require("../lib/prisma");
 const tokenService = require("../utils/tokenService");
-
-const prisma = new PrismaClient();
 
 const authenticateToken = async (req, res, next) => {
   try {

@@ -1,10 +1,8 @@
 const passport = require("passport");
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
 const FacebookStrategy = require("passport-facebook").Strategy;
-const { PrismaClient } = require("@prisma/client");
+const prisma = require("../lib/prisma");
 const config = require("../config");
-
-const prisma = new PrismaClient();
 
 // Google OAuth Strategy
 if (config.google.clientId && config.google.clientSecret) {

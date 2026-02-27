@@ -1,6 +1,4 @@
-const { PrismaClient } = require("@prisma/client");
-
-const prisma = new PrismaClient();
+const prisma = require("../lib/prisma");
 
 class AffiliateController {
   // GET /api/affiliate - Get all affiliate links with search and pagination

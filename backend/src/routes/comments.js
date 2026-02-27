@@ -7,10 +7,6 @@ const router = express.Router();
 // Get comments for a chapter (public)
 router.get(
   "/chapters/:chapterId/comments",
-  (req, res, next) => {
-    console.log("Comment route hit:", req.path, req.params);
-    next();
-  },
   commentsController.getComments
 );
 

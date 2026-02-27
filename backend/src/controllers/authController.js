@@ -1,9 +1,7 @@
 const bcrypt = require("bcryptjs");
-const { PrismaClient } = require("@prisma/client");
+const prisma = require("../lib/prisma");
 const tokenService = require("../utils/tokenService");
 const validationService = require("../utils/validationService");
-
-const prisma = new PrismaClient();
 
 class AuthController {
   // Register new user
