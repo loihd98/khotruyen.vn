@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import apiClient from "@/utils/api";
 import toast from "react-hot-toast";
 import { getMediaUrl } from "../../utils/media";
-import Image from "next/image";
 import AffiliateLinkSelect from "./AffiliateLinkSelect";
 import { MediaSelectModal } from "./AdminMediaManager";
 
@@ -238,8 +237,8 @@ const AdminChapterForm: React.FC<AdminChapterFormProps> = ({
           {success}
         </div>
       )}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="space-y-4">
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Story Selection - only show when creating new chapter without specified story */}
           {!storyId && (
             <div>
@@ -271,7 +270,7 @@ const AdminChapterForm: React.FC<AdminChapterFormProps> = ({
               name="number"
               value={formData.number}
               onChange={handleInputChange}
-              className="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 bg-[#374151] border rounded-md focus:ring-2 focus:ring-blue-500"
               min={1}
               required
             />
@@ -283,7 +282,7 @@ const AdminChapterForm: React.FC<AdminChapterFormProps> = ({
               name="title"
               value={formData.title}
               onChange={handleInputChange}
-              className="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 bg-[#374151] border rounded-md focus:ring-2 focus:ring-blue-500"
               required
             />
           </div>
@@ -326,22 +325,20 @@ const AdminChapterForm: React.FC<AdminChapterFormProps> = ({
                   <button
                     type="button"
                     onClick={() => setActiveMediaTab("audio")}
-                    className={`py-3 px-6 text-sm font-medium border-b-2 transition-colors ${
-                      activeMediaTab === "audio"
-                        ? "border-blue-500 text-blue-600 dark:text-blue-400"
-                        : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                    }`}
+                    className={`py-3 px-6 text-sm font-medium border-b-2 transition-colors ${activeMediaTab === "audio"
+                      ? "border-blue-500 text-blue-600 dark:text-blue-400"
+                      : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                      }`}
                   >
                     🎵 Audio Files
                   </button>
                   <button
                     type="button"
                     onClick={() => setActiveMediaTab("image")}
-                    className={`py-3 px-6 text-sm font-medium border-b-2 transition-colors ${
-                      activeMediaTab === "image"
-                        ? "border-blue-500 text-blue-600 dark:text-blue-400"
-                        : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                    }`}
+                    className={`py-3 px-6 text-sm font-medium border-b-2 transition-colors ${activeMediaTab === "image"
+                      ? "border-blue-500 text-blue-600 dark:text-blue-400"
+                      : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                      }`}
                   >
                     🖼️ image
                   </button>
@@ -419,12 +416,10 @@ const AdminChapterForm: React.FC<AdminChapterFormProps> = ({
                       </div>
                       {thumbnailPreview && (
                         <div className="mt-3">
-                          <Image
+                          <img
                             src={thumbnailPreview}
                             alt="Thumbnail preview"
-                            width={200}
-                            height={250}
-                            className="rounded-md object-cover border border-gray-200 dark:border-gray-600"
+                            className="rounded-md object-cover border border-gray-200 dark:border-gray-600 w-[200px] h-[250px]"
                           />
                         </div>
                       )}
@@ -452,7 +447,7 @@ const AdminChapterForm: React.FC<AdminChapterFormProps> = ({
           value={formData.content}
           onChange={handleInputChange}
           rows={8}
-          className="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500"
+          className="w-full px-3 py-2 border rounded-md bg-[#374151] focus:ring-2 focus:ring-blue-500"
           required
         />
       </div>

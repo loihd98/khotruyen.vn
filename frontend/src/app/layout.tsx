@@ -8,36 +8,86 @@ import ThemeProvider from "@/components/layout/ThemeProvider";
 const inter = Inter({ subsets: ["latin"] });
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://vivutruyenhay.com";
-const siteName = "vivutruyenhay.com";
+const siteName = "Vivu Truyện Hay";
 const siteDescription =
-  "Nền tảng đọc truyện online, nghe truyện audio và review phim miễn phí hàng đầu Việt Nam. Cập nhật liên tục các thể loại: tiên hiệp, kiếm hiệp, ngôn tình, huyền huyễn, đô thị, phim hành động, phim tình cảm...";
+  "Vivu Truyện Hay là website tổng hợp truyện audio, truyện đọc online và phim hay với nhiều thể loại hấp dẫn như truyện ma, truyện trinh thám, truyện ngôn tình, truyện đô thị và truyện tình cảm người lớn. Nội dung trên website được cập nhật liên tục mỗi ngày giúp người nghe và người đọc có thể dễ dàng tìm thấy những câu chuyện hấp dẫn. Kho truyện audio tại Vivu Truyện Hay bao gồm hàng nghìn truyện mp3 với nhiều thể loại như truyện ma, truyện trinh thám, truyện ngôn tình, truyện đô thị, truyện kiếm hiệp và truyện tiên hiệp. Người dùng có thể nghe truyện online miễn phí với chất lượng âm thanh tốt và nội dung được chọn lọc.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "vivutruyenhay.com - Đọc truyện online & Review phim miễn phí",
-    template: "%s | vivutruyenhay.com",
+    default: "Vivu Truyện Hay – Nghe Truyện Audio, Đọc Truyện Online Và Xem Phim Hay Mỗi Ngày",
+    template: "%s | Vivu Truyện Hay",
   },
   description: siteDescription,
   keywords: [
+    "vivutruyenhay",
+    "vivutruyenhay.com",
+    "vivu truyện hay",
+    "vi vu truyện hay",
+    "vivu truyen hay",
+    "web vivu truyện hay",
+    "nghe truyện audio",
+    "nghe truyện audio hay",
+    "truyện audio hay nhất",
+    "web nghe truyện audio",
+    "truyện audio mp3",
+    "nghe truyện mp3 miễn phí",
+    "truyện audio online",
+    "nghe truyện online",
+    "truyện audio miễn phí",
+    "truyện audio mới nhất",
+    "truyện audio",
+    "truyện audio hay",
+    "truyện audio full",
+    "truyện audio chọn lọc",
+    "nghe truyện đêm khuya",
+    "truyện audio nổi tiếng",
     "đọc truyện online",
     "truyện chữ",
-    "truyện audio",
     "truyện hay",
     "kho truyện",
     "truyện miễn phí",
-    "tiên hiệp",
-    "kiếm hiệp",
-    "ngôn tình",
-    "huyền huyễn",
     "truyện full",
     "đọc truyện miễn phí",
+    "truyện ngôn tình audio",
+    "nghe truyện ngôn tình",
+    "truyện ngôn tình hay",
+    "truyện ma audio",
+    "nghe truyện ma",
+    "truyện ma hay",
+    "truyện đô thị audio",
+    "nghe truyện đô thị",
+    "truyện đô thị hay",
+    "truyện tiên hiệp audio",
+    "nghe truyện tiên hiệp",
+    "truyện tiên hiệp hay",
+    "truyện kiếm hiệp audio",
+    "nghe truyện kiếm hiệp",
+    "truyện kiếm hiệp hay",
+    "truyện trinh thám audio",
+    "nghe truyện trinh thám",
+    "truyện trinh thám hay",
+    "truyện tình cảm audio",
+    "nghe truyện tình cảm",
+    "truyện tình cảm hay",
+    "truyện drama audio",
+    "nghe truyện drama",
+    "truyện hài hước audio",
+    "truyện lãng mạn audio",
+    "truyện thanh xuân audio",
+    "truyện kinh dị audio",
     "review phim",
     "đánh giá phim",
     "phim hay",
-    "xem phim",
-    "phim mới nhất",
-    "review phim hay",
+    "xem phim online",
+    "phim mới",
+    "phim hành động",
+    "phim tình cảm",
+    "phim kinh dị",
+    "review truyện hay",
+    "review truyện audio",
+    "top truyện audio hay",
+    "truyện hay nên nghe",
   ],
   authors: [{ name: "Evanloi9x", url: siteUrl }],
   creator: "Evanloi9x",
@@ -52,23 +102,23 @@ export const metadata: Metadata = {
     locale: "vi_VN",
     url: siteUrl,
     siteName: siteName,
-    title: "vivutruyenhay.com - Đọc truyện online miễn phí",
+    title: "Vivu Truyện Hay – Nghe Truyện Audio, Đọc Truyện Online Và Xem Phim Hay Mỗi Ngày",
     description: siteDescription,
     images: [
       {
-        url: "/og-image.svg",
+        url: "/vivutruyenhay_logo.jpg",
         width: 1200,
         height: 630,
-        alt: "vivutruyenhay.com - Kho truyện online",
-        type: "image/svg+xml",
+        alt: "Vivu Truyện Hay – Kho truyện audio, truyện chữ và review phim",
+        type: "image/jpeg",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "vivutruyenhay.com - Đọc truyện online miễn phí",
+    title: "Vivu Truyện Hay – Nghe Truyện Audio, Đọc Truyện Online Và Xem Phim Hay",
     description: siteDescription,
-    images: ["/og-image.svg"],
+    images: ["/vivutruyenhay_logo.jpg"],
     creator: "@Evanloi9x",
   },
   robots: {
@@ -84,17 +134,9 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
-      { url: "/favicon.svg", type: "image/svg+xml" },
-      { url: "/favicon.ico", sizes: "any" },
+      { url: "/vivutruyenhay_logo.jpg", type: "image/jpeg" },
     ],
-    apple: [{ url: "/apple-touch-icon.svg", type: "image/svg+xml" }],
-    other: [
-      {
-        rel: "mask-icon",
-        url: "/logo.svg",
-        color: "#1e40af",
-      },
-    ],
+    apple: [{ url: "/vivutruyenhay_logo.jpg", type: "image/jpeg" }],
   },
   manifest: "/manifest.json",
   alternates: {
@@ -115,7 +157,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="vi" suppressHydrationWarning>
+    <html lang="vi" suppressHydrationWarning className="dark">
       <head>
         <meta name="theme-color" content="#1e40af" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -124,30 +166,10 @@ export default function RootLayout({
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="application-name" content="vivutruyenhay.com" />
         <link rel="author" href={`${siteUrl}/humans.txt`} />
-        {/* Inline script runs before React hydration to prevent flash of light theme */}
+        {/* Inline script to force dark theme before React hydration */}
         <script
           dangerouslySetInnerHTML={{
-            __html: `
-              (function() {
-                try {
-                  var persisted = localStorage.getItem('persist:ui');
-                  var theme = 'dark';
-                  if (persisted) {
-                    var parsed = JSON.parse(persisted);
-                    if (parsed.theme) {
-                      theme = JSON.parse(parsed.theme);
-                    }
-                  }
-                  if (theme === 'dark') {
-                    document.documentElement.classList.add('dark');
-                  } else {
-                    document.documentElement.classList.remove('dark');
-                  }
-                } catch (e) {
-                  document.documentElement.classList.add('dark');
-                }
-              })();
-            `,
+            __html: `document.documentElement.classList.add('dark');`,
           }}
         />
       </head>

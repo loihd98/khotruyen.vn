@@ -23,9 +23,10 @@ interface Story {
 
 interface SidebarProps {
   className?: string;
+  flat?: boolean;
 }
 
-export default function StorySidebar({ className = "" }: SidebarProps) {
+export default function StorySidebar({ className = "", flat = false }: SidebarProps) {
   const router = useRouter();
   const [hotStories, setHotStories] = useState<Story[]>([]);
   const [trendingStories, setTrendingStories] = useState<Story[]>([]);
@@ -63,7 +64,7 @@ export default function StorySidebar({ className = "" }: SidebarProps) {
 
   const StoryItem = ({ story }: { story: Story }) => (
     <div
-      onClick={() => router.push(`/stories/${story.slug}?from=sidebar`)}
+      onClick={() => router.push(`${story.type === "AUDIO" ? "/truyen_audio" : "/truyen_text"}/${story.slug}?from=sidebar`)}
       className="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors group"
     >
       <div className="relative w-12 h-16 flex-shrink-0 overflow-hidden rounded">
@@ -92,11 +93,10 @@ export default function StorySidebar({ className = "" }: SidebarProps) {
         </p>
         <div className="flex items-center space-x-2 mt-1">
           <span
-            className={`px-1.5 py-0.5 rounded text-xs ${
-              story.type === "AUDIO"
-                ? "bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300"
-                : "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300"
-            }`}
+            className={`px-1.5 py-0.5 rounded text-xs ${story.type === "AUDIO"
+              ? "bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300"
+              : "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300"
+              }`}
           >
             {story.type === "AUDIO" ? "🎧" : "📖"}
           </span>
@@ -151,7 +151,7 @@ export default function StorySidebar({ className = "" }: SidebarProps) {
 
         <div className="mt-4 pt-3 border-t border-gray-200 dark:border-gray-700">
           <button
-            onClick={() => router.push("/stories?sort=viewCount&order=desc")}
+            onClick={() => router.push("/truyen_text?sort=viewCount&order=desc")}
             className="w-full text-center text-sm text-blue-600 dark:text-blue-400 hover:underline"
           >
             Xem tất cả truyện hot →
@@ -160,7 +160,7 @@ export default function StorySidebar({ className = "" }: SidebarProps) {
       </div>
 
       {/* Trending Stories */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4">
+      <div className={flat ? "" : "bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4"}>
         <div className="flex items-center space-x-2 mb-4">
           <span className="text-lg">📈</span>
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
@@ -180,7 +180,7 @@ export default function StorySidebar({ className = "" }: SidebarProps) {
 
         <div className="mt-4 pt-3 border-t border-gray-200 dark:border-gray-700">
           <button
-            onClick={() => router.push("/stories?sort=createdAt&order=desc")}
+            onClick={() => router.push("/truyen_text?sort=createdAt&order=desc")}
             className="w-full text-center text-sm text-blue-600 dark:text-blue-400 hover:underline"
           >
             Xem truyện mới nhất →
@@ -189,26 +189,26 @@ export default function StorySidebar({ className = "" }: SidebarProps) {
       </div>
 
       {/* Quick Links */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4">
+      <div className={flat ? "" : "bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4"}>
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
           ⚡ Liên kết nhanh
         </h3>
 
         <div className="space-y-2">
           <button
-            onClick={() => router.push("/genres")}
+            onClick={() => router.push("/the-loai")}
             className="w-full text-left px-3 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-colors"
           >
             📚 Thể loại
           </button>
           <button
-            onClick={() => router.push("/stories?type=AUDIO")}
+            onClick={() => router.push("/truyen_audio")}
             className="w-full text-left px-3 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-colors"
           >
             🎧 Truyện Audio
           </button>
           <button
-            onClick={() => router.push("/stories?type=TEXT")}
+            onClick={() => router.push("/truyen_text")}
             className="w-full text-left px-3 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-colors"
           >
             📖 Truyện Text

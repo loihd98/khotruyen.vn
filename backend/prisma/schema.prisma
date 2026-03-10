@@ -76,16 +76,28 @@ model RefreshToken {
   @@map("refresh_tokens")
 }
 
-model Genre {
+model TextGenre {
   id        String   @id @default(cuid())
   name      String   @unique
   slug      String   @unique
   createdAt DateTime @default(now())
-  
+
   // Relations
   stories   Story[]
-  
-  @@map("genres")
+
+  @@map("text_genres")
+}
+
+model AudioGenre {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  slug      String   @unique
+  createdAt DateTime @default(now())
+
+  // Relations
+  stories   Story[]
+
+  @@map("audio_genres")
 }
 
 model AffiliateLink {
@@ -139,8 +151,9 @@ model Story {
   affiliateId  String?
   affiliate    AffiliateLink? @relation(fields: [affiliateId], references: [id], onDelete: SetNull)
   
-  // Genres relationship (many-to-many)
-  genres       Genre[]
+  // Genres relationship (many-to-many, separated by story type)
+  textGenres   TextGenre[]
+  audioGenres  AudioGenre[]
   
   // Timestamps
   createdAt    DateTime    @default(now())

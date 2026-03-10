@@ -1,5 +1,6 @@
 import React from "react";
 import Link from "next/link";
+import Image from "next/image";
 
 const Footer: React.FC = () => {
   return (
@@ -10,13 +11,34 @@ const Footer: React.FC = () => {
           <div className="col-span-1 md:col-span-2">
             <div className="flex items-center">
               <div className="text-xl font-bold text-blue-600 dark:text-blue-400">
-                📚 vivutruyenhay.com
+                📚 Vivu Truyện Hay
               </div>
             </div>
-            <p className="mt-4 text-gray-600 dark:text-gray-400 text-sm max-w-md">
-              Nền tảng đọc và nghe truyện online hàng đầu Việt Nam. Khám phá
-              hàng ngàn câu chuyện hấp dẫn với chất lượng âm thanh tuyệt vời.
-            </p>
+            <div className="mt-4 flex gap-4 items-start">
+              {/* Left: text content */}
+              <div className="flex-1 text-gray-600 dark:text-gray-400 text-sm space-y-3">
+                <p>Nền tảng đọc truyện và nghe truyện online miễn phí với hàng nghìn nội dung hấp dẫn.</p>
+                <div>
+                  <p className="font-semibold text-gray-700 dark:text-gray-300">💙 Ủng hộ website</p>
+                  <p className="mt-1">Nếu bạn thấy nội dung hữu ích, bạn có thể ủng hộ để website duy trì máy chủ và cập nhật thêm nhiều truyện hay.</p>
+                </div>
+                <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-3 text-xs space-y-1">
+                  <p className="font-semibold text-gray-700 dark:text-gray-300">Ngân hàng: ACB</p>
+                  <p>STK: <span className="font-mono font-bold text-blue-600 dark:text-blue-400">12706717</span></p>
+                </div>
+              </div>
+              {/* Right: QR code */}
+              <div className="flex-shrink-0">
+                <Image
+                  src="/qr.png"
+                  alt="QR ủng hộ ACB"
+                  width={100}
+                  height={100}
+                  className="rounded-lg border border-gray-200 dark:border-gray-700"
+                />
+                <p className="text-xs text-center text-gray-500 dark:text-gray-400 mt-1">Quét QR</p>
+              </div>
+            </div>
             <div className="mt-6 flex space-x-4">
               <a
                 href="#"
@@ -80,15 +102,15 @@ const Footer: React.FC = () => {
             <ul className="mt-4 space-y-4">
               <li>
                 <Link
-                  href="/stories"
+                  href="/truyen_text"
                   className="text-base text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
                 >
-                  Tất cả truyện
+                  Tất cả truyện văn
                 </Link>
               </li>
               <li>
                 <Link
-                  href="/stories?type=TEXT"
+                  href="/truyen_text"
                   className="text-base text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
                 >
                   Truyện văn
@@ -96,7 +118,7 @@ const Footer: React.FC = () => {
               </li>
               <li>
                 <Link
-                  href="/stories?type=AUDIO"
+                  href="/truyen_audio"
                   className="text-base text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
                 >
                   Truyện audio
@@ -104,7 +126,7 @@ const Footer: React.FC = () => {
               </li>
               <li>
                 <Link
-                  href="/genres"
+                  href="/the-loai"
                   className="text-base text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
                 >
                   Thể loại
@@ -112,7 +134,7 @@ const Footer: React.FC = () => {
               </li>
               <li>
                 <Link
-                  href="/stories?sort=popular"
+                  href="/truyen_text?sort=popular"
                   className="text-base text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
                 >
                   Phổ biến
@@ -175,7 +197,7 @@ const Footer: React.FC = () => {
         <div className="mt-12 border-t border-gray-200 dark:border-gray-700 pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <p className="text-base text-gray-400 dark:text-gray-500">
-              &copy; 2024 vivutruyenhay.com. Tất cả quyền được bảo lưu.
+              &copy; {new Date().getFullYear()} Vivu Truyện Hay (vivutruyenhay.com). Tất cả quyền được bảo lưu.
             </p>
             <div className="mt-4 md:mt-0 flex space-x-6">
               <Link

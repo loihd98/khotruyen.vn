@@ -45,12 +45,16 @@ interface StoriesClientProps {
   initialStories?: any[];
   initialPagination?: PaginationData;
   initialGenres?: Array<{ id: string; name: string; slug: string }>;
+  basePath?: string;
+  lockedType?: "TEXT" | "AUDIO";
 }
 
 export default function StoriesClient({
   initialStories,
   initialPagination,
   initialGenres,
+  basePath = "/stories",
+  lockedType,
 }: StoriesClientProps = {}) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -73,7 +77,7 @@ export default function StoriesClient({
     searchParams.get("search") || ""
   );
   const [selectedType, setSelectedType] = useState<"TEXT" | "AUDIO" | "">(
-    (searchParams.get("type") as "TEXT" | "AUDIO") || ""
+    lockedType || (searchParams.get("type") as "TEXT" | "AUDIO") || ""
   );
   const [selectedGenre, setSelectedGenre] = useState<string>(
     searchParams.get("genre") || ""
@@ -116,7 +120,6 @@ export default function StoriesClient({
       }
 
       const response = await apiClient.get(`/stories?${params}`);
-      console.log(response.data, "Fetched stories data");
 
       setStories(response.data.data || []);
       setPagination(response.data?.pagination);
@@ -231,10 +234,6 @@ export default function StoriesClient({
       url.set("search", params.search.trim());
     }
 
-    if (params.type) {
-      url.set("type", params.type);
-    }
-
     if (params.genre) {
       url.set("genre", params.genre);
     }
@@ -247,17 +246,22 @@ export default function StoriesClient({
       url.set("page", params.page);
     }
 
+    // Don't include type in URL when it's locked (implied by page path)
+    if (params.type && !lockedType) {
+      url.set("type", params.type);
+    }
+
     const queryString = url.toString();
-    router.push(`/stories${queryString ? `?${queryString}` : ""}`);
+    router.push(`${basePath}${queryString ? `?${queryString}` : ""}`);
   };
 
   const clearFilters = () => {
     setSearchQuery("");
     setDebouncedSearch("");
-    setSelectedType("");
+    if (!lockedType) setSelectedType("");
     setSelectedGenre("");
     setSortBy("createdAt");
-    router.push("/stories");
+    router.push(basePath);
   };
 
   return (
@@ -286,23 +290,25 @@ export default function StoriesClient({
 
           {/* Filter Row */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {/* Type Filter */}
-            <div className="sm:block hidden">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Loại truyện
-              </label>
-              <select
-                value={selectedType}
-                onChange={(e) =>
-                  handleTypeChange(e.target.value as "TEXT" | "AUDIO" | "")
-                }
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200"
-              >
-                <option value="">Tất cả</option>
-                <option value="TEXT">📖 Truyện chữ</option>
-                <option value="AUDIO">🎧 Truyện audio</option>
-              </select>
-            </div>
+            {/* Type Filter - hidden when type is locked by page context */}
+            {!lockedType && (
+              <div className="sm:block hidden">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Loại truyện
+                </label>
+                <select
+                  value={selectedType}
+                  onChange={(e) =>
+                    handleTypeChange(e.target.value as "TEXT" | "AUDIO" | "")
+                  }
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200"
+                >
+                  <option value="">Tất cả</option>
+                  <option value="TEXT">📖 Truyện chữ</option>
+                  <option value="AUDIO">🎧 Truyện audio</option>
+                </select>
+              </div>
+            )}
 
             {/* Genre Filter */}
             <div>

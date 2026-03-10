@@ -24,28 +24,28 @@ const THEMED_SECTIONS: ThemedSection[] = [
     emoji: "⚔️",
     type: "AUDIO",
     genre: "kiem-hiep",
-    linkAll: "/stories?type=AUDIO&genre=kiem-hiep",
+    linkAll: "/the-loai/kiem-hiep",
   },
   {
     title: "Audio Tiên Hiệp",
     emoji: "🌟",
     type: "AUDIO",
     genre: "tien-hiep",
-    linkAll: "/stories?type=AUDIO&genre=tien-hiep",
+    linkAll: "/the-loai/tien-hiep",
   },
   {
     title: "Audio Ngôn Tình",
     emoji: "💕",
     type: "AUDIO",
     genre: "ngon-tinh",
-    linkAll: "/stories?type=AUDIO&genre=ngon-tinh",
+    linkAll: "/the-loai/ngon-tinh",
   },
   {
     title: "Audio Đô Thị",
     emoji: "🏙️",
     type: "AUDIO",
     genre: "do-thi",
-    linkAll: "/stories?type=AUDIO&genre=do-thi",
+    linkAll: "/the-loai/do-thi",
   },
 ];
 
@@ -108,7 +108,7 @@ const ThemedGenreSections: React.FC<ThemedGenreSectionsProps> = ({ initialSectio
   const renderStoryCard = (story: Story) => (
     <Link
       key={story.id}
-      href={`/stories/${story.slug}`}
+      href={`${story.type === "AUDIO" ? "/truyen_audio" : "/truyen_text"}/${story.slug}`}
       className="group bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
     >
       <div className="relative aspect-[3/4] bg-gray-200 dark:bg-gray-700 overflow-hidden">

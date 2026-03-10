@@ -55,7 +55,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 1,
     },
     {
-      url: `${baseUrl}/stories`,
+      url: `${baseUrl}/truyen_text`,
+      lastModified: new Date(),
+      changeFrequency: "daily",
+      priority: 0.9,
+    },
+    {
+      url: `${baseUrl}/truyen_audio`,
       lastModified: new Date(),
       changeFrequency: "daily",
       priority: 0.9,
@@ -67,7 +73,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.9,
     },
     {
-      url: `${baseUrl}/genres`,
+      url: `${baseUrl}/the-loai`,
       lastModified: new Date(),
       changeFrequency: "weekly",
       priority: 0.8,

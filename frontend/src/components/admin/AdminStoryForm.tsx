@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
 import { useSelector } from "react-redux";
 import toast from "react-hot-toast";
 import { RootState } from "../../store";
@@ -43,31 +42,38 @@ interface StoryFormData {
   affiliateId?: string;
   chapters?: ChapterFormData[];
   status: "DRAFT" | "PUBLISHED" | "HIDDEN";
+  chapter1Title?: string;
+  chapter1AudioUrl?: string;
 }
 
 interface AdminStoryFormProps {
   storyId?: string;
+  defaultType?: "TEXT" | "AUDIO";
   onCloseModal?: () => void;
   onSuccess?: () => void;
 }
 
 const AdminStoryForm: React.FC<AdminStoryFormProps> = ({
   storyId,
+  defaultType,
   onCloseModal,
   onSuccess,
 }) => {
   const router = useRouter();
   const { user } = useSelector((state: RootState) => state.auth);
+  const lockedType = !storyId && defaultType ? defaultType : undefined;
   const [formData, setFormData] = useState<StoryFormData>({
     title: "",
     description: "",
-    type: "TEXT",
+    type: lockedType ?? "TEXT",
     genreIds: [],
     thumbnailUrl: "",
     audioUrl: "",
     content: "",
     affiliateId: "",
     status: "DRAFT",
+    chapter1Title: "Chương 1",
+    chapter1AudioUrl: "",
   });
 
   const [genres, setGenres] = useState<Genre[]>([]);
@@ -80,18 +86,26 @@ const AdminStoryForm: React.FC<AdminStoryFormProps> = ({
   const [success, setSuccess] = useState<string>("");
   const [showImageSelectModal, setShowImageSelectModal] = useState(false);
   const [showAudioSelectModal, setShowAudioSelectModal] = useState(false);
+  const [chapter1AudioPreview, setChapter1AudioPreview] = useState<string>("");
+  const [showChapter1AudioModal, setShowChapter1AudioModal] = useState(false);
+  const [uploadingChapter1, setUploadingChapter1] = useState(false);
 
   useEffect(() => {
-    fetchGenres();
     fetchAffiliates();
     if (storyId) {
       fetchStoryData();
     }
   }, [storyId]);
 
-  const fetchGenres = async () => {
+  // Re-fetch genres whenever the story type changes
+  useEffect(() => {
+    fetchGenres(formData.type);
+  }, [formData.type]);
+
+  const fetchGenres = async (type?: "TEXT" | "AUDIO") => {
     try {
-      const response = await apiClient.get("/stories/genres");
+      const t = type ?? formData.type;
+      const response = await apiClient.get(`/stories/genres?type=${t}`);
       if (response.data) {
         setGenres(response.data.genres || []);
       }
@@ -136,7 +150,14 @@ const AdminStoryForm: React.FC<AdminStoryFormProps> = ({
           content: story.content || "",
           affiliateId: story.affiliateId || "",
           status: story.status || "DRAFT",
+          chapter1Title: story.chapters?.find((c: any) => c.number === 1)?.title || "Chương 1",
+          chapter1AudioUrl: story.chapters?.find((c: any) => c.number === 1)?.audioUrl || "",
         });
+
+        const ch1AudioUrl = story.chapters?.find((c: any) => c.number === 1)?.audioUrl;
+        if (ch1AudioUrl) {
+          setChapter1AudioPreview(getMediaUrl(ch1AudioUrl));
+        }
 
         if (story.thumbnailUrl) {
           setThumbnailPreview(getMediaUrl(story.thumbnailUrl));
@@ -153,8 +174,7 @@ const AdminStoryForm: React.FC<AdminStoryFormProps> = ({
     } catch (error: any) {
       console.error("Error fetching story:", error);
       setError(
-        `Không thể tải thông tin truyện: ${
-          error.response?.data?.message || error.message
+        `Không thể tải thông tin truyện: ${error.response?.data?.message || error.message
         }`
       );
     } finally {
@@ -168,10 +188,14 @@ const AdminStoryForm: React.FC<AdminStoryFormProps> = ({
     >
   ) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setFormData((prev) => {
+      const next = { ...prev, [name]: value };
+      // Clear selected genres when type changes so stale IDs don't cross tables
+      if (name === "type") {
+        next.genreIds = [];
+      }
+      return next;
+    });
   };
 
   const handleGenreChange = (genreId: string, checked: boolean) => {
@@ -286,6 +310,30 @@ const AdminStoryForm: React.FC<AdminStoryFormProps> = ({
     }
   };
 
+  const handleChapter1AudioChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("audio/")) {
+      toast.error("Vui lòng chọn file audio");
+      return;
+    }
+    if (file.size > 200 * 1024 * 1024) {
+      toast.error("File audio không được vượt quá 200MB");
+      return;
+    }
+    try {
+      setUploadingChapter1(true);
+      setChapter1AudioPreview(URL.createObjectURL(file));
+      const url = await uploadFile(file, "audio");
+      setFormData((prev) => ({ ...prev, chapter1AudioUrl: url }));
+    } catch {
+      toast.error("Có lỗi xảy ra khi upload audio chương 1");
+      setChapter1AudioPreview("");
+    } finally {
+      setUploadingChapter1(false);
+    }
+  };
+
   // Media selection handlers
   const handleImageSelect = (media: any) => {
     setFormData((prev) => ({ ...prev, thumbnailUrl: media.url }));
@@ -297,6 +345,12 @@ const AdminStoryForm: React.FC<AdminStoryFormProps> = ({
     setFormData((prev) => ({ ...prev, audioUrl: media.url }));
     setAudioPreview(getMediaUrl(media.url));
     setShowAudioSelectModal(false);
+  };
+
+  const handleChapter1AudioSelect = (media: any) => {
+    setFormData((prev) => ({ ...prev, chapter1AudioUrl: media.url }));
+    setChapter1AudioPreview(getMediaUrl(media.url));
+    setShowChapter1AudioModal(false);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -324,8 +378,8 @@ const AdminStoryForm: React.FC<AdminStoryFormProps> = ({
       return;
     }
 
-    if (formData.type === "TEXT" && !formData.content?.trim()) {
-      const errorMsg = "Vui lòng nhập nội dung truyện";
+    if (formData.type === "TEXT" && !storyId && !formData.content?.trim()) {
+      const errorMsg = "Vui lòng nhập nội dung truyện (Chương 1)";
       toast.error(errorMsg);
       setError(errorMsg);
       return;
@@ -363,23 +417,19 @@ const AdminStoryForm: React.FC<AdminStoryFormProps> = ({
           setFormData({
             title: "",
             description: "",
-            type: "TEXT",
+            type: lockedType ?? "TEXT",
             genreIds: [],
             thumbnailUrl: "",
             audioUrl: "",
             content: "",
             affiliateId: "",
             status: "DRAFT",
-            chapters: [] as {
-              number: number;
-              title: string;
-              content?: string;
-              audioUrl?: string;
-              isLocked: boolean;
-            }[],
+            chapter1Title: "Chương 1",
+            chapter1AudioUrl: "",
           });
           setThumbnailPreview("");
           setAudioPreview("");
+          setChapter1AudioPreview("");
         }
 
         // Call success callback to refresh parent list
@@ -451,15 +501,21 @@ const AdminStoryForm: React.FC<AdminStoryFormProps> = ({
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Loại truyện *
               </label>
-              <select
-                name="type"
-                value={formData.type}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="TEXT">📖 Truyện chữ</option>
-                <option value="AUDIO">🎧 Truyện audio</option>
-              </select>
+              {lockedType ? (
+                <div className="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-md bg-gray-100 dark:bg-gray-600 text-gray-700 dark:text-gray-300 cursor-not-allowed">
+                  {lockedType === "AUDIO" ? "🎧 Truyện audio" : "📖 Truyện chữ"}
+                </div>
+              ) : (
+                <select
+                  name="type"
+                  value={formData.type}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="TEXT">📖 Truyện chữ</option>
+                  <option value="AUDIO">🎧 Truyện audio</option>
+                </select>
+              )}
             </div>
 
             {/* Status */}
@@ -549,12 +605,10 @@ const AdminStoryForm: React.FC<AdminStoryFormProps> = ({
               </div>
               {thumbnailPreview && (
                 <div className="mt-2">
-                  <Image
+                  <img
                     src={thumbnailPreview}
                     alt="Thumbnail preview"
-                    width={200}
-                    height={250}
-                    className="rounded-md object-cover"
+                    className="rounded-md object-cover w-[200px] h-[250px]"
                   />
                 </div>
               )}
@@ -609,11 +663,11 @@ const AdminStoryForm: React.FC<AdminStoryFormProps> = ({
           />
         </div>
 
-        {/* Content for TEXT type */}
+        {/* Content for TEXT type — Chapter 1 content when creating */}
         {formData.type === "TEXT" && (
           <div className="mt-6">
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Nội dung truyện *
+              {storyId ? "Nội dung truyện" : "Nội dung Chương 1 *"}
             </label>
             <textarea
               name="content"
@@ -624,6 +678,69 @@ const AdminStoryForm: React.FC<AdminStoryFormProps> = ({
               placeholder="Nhập nội dung truyện..."
               required
             />
+          </div>
+        )}
+
+        {/* Chapter 1 section for AUDIO — show in both create and edit modes */}
+        {formData.type === "AUDIO" && (
+          <div className="mt-6 p-4 border border-purple-200 dark:border-purple-700 rounded-lg bg-purple-50 dark:bg-purple-900/20">
+            <h3 className="text-sm font-semibold text-purple-700 dark:text-purple-300 mb-4">
+              🎧 {storyId ? "Cập nhật Chương 1" : "Chương 1 (tạo cùng truyện)"}
+            </h3>
+            <div className="space-y-4">
+              {/* Chapter 1 title */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Tiêu đề chương
+                </label>
+                <input
+                  type="text"
+                  name="chapter1Title"
+                  value={formData.chapter1Title}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500"
+                  placeholder="VD: Chương 1"
+                />
+              </div>
+
+              {/* Chapter 1 audio */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  File audio chương 1
+                </label>
+                <div className="space-y-2">
+                  <input
+                    type="file"
+                    accept="audio/*"
+                    onChange={handleChapter1AudioChange}
+                    disabled={uploadingChapter1}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 disabled:opacity-50"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowChapter1AudioModal(true)}
+                    className="w-full px-3 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors"
+                  >
+                    {uploadingChapter1 ? (
+                      <span className="flex items-center justify-center gap-2">
+                        <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
+                        Đang upload...
+                      </span>
+                    ) : (
+                      "🎵 Chọn từ thư viện"
+                    )}
+                  </button>
+                </div>
+                {chapter1AudioPreview && (
+                  <div className="mt-2">
+                    <audio controls className="w-full">
+                      <source src={chapter1AudioPreview} />
+                      Trình duyệt không hỗ trợ phát audio.
+                    </audio>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         )}
 
@@ -670,6 +787,14 @@ const AdminStoryForm: React.FC<AdminStoryFormProps> = ({
         onSelect={handleAudioSelect}
         type="audio"
         title="Chọn audio từ thư viện"
+      />
+
+      <MediaSelectModal
+        isOpen={showChapter1AudioModal}
+        onClose={() => setShowChapter1AudioModal(false)}
+        onSelect={handleChapter1AudioSelect}
+        type="audio"
+        title="Chọn audio cho Chương 1"
       />
     </form>
   );

@@ -23,15 +23,15 @@ const getDailyPopupData = () => {
     try {
         const data = localStorage.getItem(STORAGE_KEY);
         if (!data) return { date: '', count: 0 };
-        
+
         const parsed = JSON.parse(data);
         const today = new Date().toDateString();
-        
+
         // Reset count if it's a new day
         if (parsed.date !== today) {
             return { date: today, count: 0 };
         }
-        
+
         return parsed;
     } catch (error) {
         return { date: new Date().toDateString(), count: 0 };
@@ -65,7 +65,7 @@ export default function DailyPopup({ storyId, affiliateLink }: DailyPopupProps) 
 
                 // Check daily show count
                 const popupData = getDailyPopupData();
-                
+
                 // Don't show if already shown MAX_DAILY_SHOWS times today
                 if (popupData.count >= MAX_DAILY_SHOWS) {
                     setIsLoading(false);
@@ -77,7 +77,7 @@ export default function DailyPopup({ storyId, affiliateLink }: DailyPopupProps) 
 
                 if (response.data.success && response.data.data) {
                     const affiliateLinks = response.data.data;
-                    
+
                     // Select link based on current show count
                     // First show (count = 0): use affiliateLinks[0]
                     // Second show (count = 1): use affiliateLinks[1]
@@ -131,13 +131,16 @@ export default function DailyPopup({ storyId, affiliateLink }: DailyPopupProps) 
 
                     {/* Title */}
                     <h2 className="text-xl md:text-2xl font-bold text-center mb-4 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                        Một click ngàn lời cảm ơn
+                        Một Click Nhỏ – Tiếp Thêm Động Lực Lớn 💙
                     </h2>
 
                     {/* Description */}
                     <p className="text-gray-700 text-center mb-8 leading-relaxed">
-                        Cảm ơn bạn đã ghé thăm nhà của vivutruyenhay.com Mỗi click sang Shopee, Tiktok của bạn đều là một lời cổ vũ,
-                        tiếp thêm năng lượng để chúng mình mang đến nhiều câu chuyện hấp dẫn hơn nữa
+
+                        Sự ủng hộ của bạn giúp tụi mình có thêm động lực tìm và đăng những bộ truyện, bộ phim hay mỗi ngày.
+                        <br />
+                        Cảm ơn vì đã ghé thăm và đồng hành cùng tụi mình!
+
                     </p>
 
                     {/* Button */}
@@ -145,13 +148,8 @@ export default function DailyPopup({ storyId, affiliateLink }: DailyPopupProps) 
                         onClick={handleClose}
                         className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-4 px-6 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200 active:scale-95"
                     >
-                        Nhấn để tắt
+                        Bấm để tắt
                     </button>
-
-                    {/* Small thank you note */}
-                    <p className="text-center text-xs text-gray-500 mt-4">
-                        💙 Cảm ơn sự ủng hộ của bạn
-                    </p>
                 </div>
             </div>
         </div>

@@ -2,6 +2,16 @@ const prisma = require("../lib/prisma");
 const slugify = require("slugify");
 const validationService = require("../utils/validationService");
 
+// Normalize story: merge textGenres/audioGenres into a single `genres` field
+function normalizeStory(story) {
+  if (!story) return story;
+  story.genres =
+    story.type === "AUDIO" ? story.audioGenres || [] : story.textGenres || [];
+  delete story.textGenres;
+  delete story.audioGenres;
+  return story;
+}
+
 class AdminController {
   // Dashboard stats
   async getDashboardStats(req, res) {
@@ -543,7 +553,13 @@ class AdminController {
                 email: true,
               },
             },
-            genres: {
+            textGenres: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+            audioGenres: {
               select: {
                 id: true,
                 name: true,
@@ -570,7 +586,7 @@ class AdminController {
       res.json({
         success: true,
         data: {
-          stories,
+          stories: stories.map(normalizeStory),
           pagination: {
             page: parseInt(page),
             limit: parseInt(limit),
@@ -602,7 +618,13 @@ class AdminController {
               email: true,
             },
           },
-          genres: {
+          textGenres: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+          audioGenres: {
             select: {
               id: true,
               name: true,
@@ -621,6 +643,7 @@ class AdminController {
               id: true,
               title: true,
               number: true,
+              audioUrl: true,
               isLocked: true,
               createdAt: true,
             },
@@ -646,7 +669,7 @@ class AdminController {
 
       res.json({
         success: true,
-        data: { story },
+        data: { story: normalizeStory(story) },
       });
     } catch (error) {
       console.error("Get story by ID error:", error);
@@ -659,8 +682,16 @@ class AdminController {
 
   async createStory(req, res) {
     try {
-      const { title, description, type, thumbnailUrl, genreIds, affiliateId } =
-        req.body;
+      const {
+        title,
+        description,
+        type,
+        thumbnailUrl,
+        genreIds,
+        affiliateId,
+        chapter1Title,
+        chapter1AudioUrl,
+      } = req.body;
 
       // Validation
       validationService.validateStoryData({ title, description, type });
@@ -676,6 +707,9 @@ class AdminController {
         counter++;
       }
 
+      // Route genre IDs to the correct relation table
+      const genreField = type === "AUDIO" ? "audioGenres" : "textGenres";
+
       // Create story
       const story = await prisma.story.create({
         data: {
@@ -686,26 +720,34 @@ class AdminController {
           thumbnailUrl: thumbnailUrl || null,
           authorId: req.user.id,
           affiliateId: affiliateId || null,
-          genres: genreIds
-            ? {
-                connect: genreIds.map((id) => ({ id })),
-              }
+          [genreField]: genreIds?.length
+            ? { connect: genreIds.map((id) => ({ id })) }
             : undefined,
         },
         include: {
-          author: {
-            select: {
-              name: true,
-            },
-          },
-          genres: true,
+          author: { select: { name: true } },
+          textGenres: true,
+          audioGenres: true,
           affiliate: true,
         },
       });
 
+      // Auto-create Chapter 1 for AUDIO stories
+      if (type === "AUDIO") {
+        await prisma.chapter.create({
+          data: {
+            storyId: story.id,
+            number: 1,
+            title: chapter1Title?.trim() || "Chương 1",
+            audioUrl: chapter1AudioUrl || null,
+            isLocked: false,
+          },
+        });
+      }
+
       res.status(201).json({
         message: "Tạo truyện thành công",
-        story,
+        story: normalizeStory(story),
       });
     } catch (error) {
       console.error("Create story error:", error);
@@ -736,6 +778,8 @@ class AdminController {
         genreIds,
         affiliateId,
         status,
+        chapter1AudioUrl,
+        chapter1Title,
       } = req.body;
 
       const updateData = {};
@@ -797,9 +841,21 @@ class AdminController {
       }
 
       if (genreIds !== undefined) {
-        updateData.genres = {
-          set: genreIds.map((id) => ({ id })),
-        };
+        // Route to the correct genre table based on current or new type
+        const resolvedType =
+          updateData.type ||
+          (
+            await prisma.story.findUnique({
+              where: { id },
+              select: { type: true },
+            })
+          )?.type ||
+          "TEXT";
+        if (resolvedType === "AUDIO") {
+          updateData.audioGenres = { set: genreIds.map((id) => ({ id })) };
+        } else {
+          updateData.textGenres = { set: genreIds.map((id) => ({ id })) };
+        }
       }
 
       const story = await prisma.story.update({
@@ -811,14 +867,33 @@ class AdminController {
               name: true,
             },
           },
-          genres: true,
+          textGenres: true,
+          audioGenres: true,
           affiliate: true,
         },
       });
 
+      // Update chapter 1 audio/title if provided (AUDIO stories)
+      if (chapter1AudioUrl !== undefined || chapter1Title !== undefined) {
+        const chapter1 = await prisma.chapter.findFirst({
+          where: { storyId: id, number: 1 },
+        });
+        if (chapter1) {
+          const chapterUpdate = {};
+          if (chapter1AudioUrl !== undefined)
+            chapterUpdate.audioUrl = chapter1AudioUrl || null;
+          if (chapter1Title !== undefined && chapter1Title.trim())
+            chapterUpdate.title = chapter1Title.trim();
+          await prisma.chapter.update({
+            where: { id: chapter1.id },
+            data: chapterUpdate,
+          });
+        }
+      }
+
       res.json({
         message: "Cập nhật truyện thành công",
-        story,
+        story: normalizeStory(story),
       });
     } catch (error) {
       console.error("Update story error:", error);
@@ -1371,41 +1446,41 @@ class AdminController {
     }
   }
 
-  // Manage Genres
+  // Manage Genres (TEXT and AUDIO genres are in separate tables)
   async getGenres(req, res) {
     try {
-      const { page = 1, limit = 10, search = "" } = req.query;
+      const { page = 1, limit = 10, search = "", type = "TEXT" } = req.query;
 
       const skip = (parseInt(page) - 1) * parseInt(limit);
 
-      const where = {
-        ...(search && {
-          OR: [
-            { name: { contains: search, mode: "insensitive" } },
-            { slug: { contains: search, mode: "insensitive" } },
-          ],
-        }),
-      };
+      const where = search
+        ? {
+            OR: [
+              { name: { contains: search, mode: "insensitive" } },
+              { slug: { contains: search, mode: "insensitive" } },
+            ],
+          }
+        : {};
+
+      const model = type === "AUDIO" ? prisma.audioGenre : prisma.textGenre;
 
       const [genres, total] = await Promise.all([
-        prisma.genre.findMany({
+        model.findMany({
           where,
           skip,
           take: parseInt(limit),
           orderBy: { name: "asc" },
           include: {
             _count: {
-              select: {
-                stories: true,
-              },
+              select: { stories: true },
             },
           },
         }),
-        prisma.genre.count({ where }),
+        model.count({ where }),
       ]);
 
       res.json({
-        genres,
+        genres: genres.map((g) => ({ ...g, type })),
         pagination: {
           page: parseInt(page),
           limit: parseInt(limit),
@@ -1424,7 +1499,7 @@ class AdminController {
 
   async createGenre(req, res) {
     try {
-      const { name } = req.body;
+      const { name, type = "TEXT" } = req.body;
 
       if (!name || name.trim().length === 0) {
         return res.status(400).json({
@@ -1433,30 +1508,42 @@ class AdminController {
         });
       }
 
-      const slug = slugify(name.replace(/[đĐ]/g, (c) => c === 'đ' ? 'd' : 'D'), { lower: true });
-
-      // Check if genre exists
-      const existingGenre = await prisma.genre.findUnique({
-        where: { slug },
-      });
-
-      if (existingGenre) {
+      if (!["TEXT", "AUDIO"].includes(type)) {
         return res.status(400).json({
-          error: "Conflict",
-          message: "Thể loại đã tồn tại",
+          error: "Bad Request",
+          message: "Loại thể loại phải là TEXT hoặc AUDIO",
         });
       }
 
-      const genre = await prisma.genre.create({
-        data: {
-          name: name.trim(),
-          slug,
-        },
+      const slug = slugify(
+        name.replace(/[đĐ]/g, (c) => (c === "đ" ? "d" : "D")),
+        { lower: true },
+      );
+      const model = type === "AUDIO" ? prisma.audioGenre : prisma.textGenre;
+
+      const existingName = await model.findFirst({
+        where: { name: name.trim() },
+      });
+      if (existingName) {
+        return res.status(400).json({
+          error: "Conflict",
+          message: "Thể loại đã tồn tại cho loại truyện này",
+        });
+      }
+
+      let finalSlug = slug;
+      const existingSlug = await model.findUnique({ where: { slug } });
+      if (existingSlug) {
+        finalSlug = `${slug}-${Date.now()}`;
+      }
+
+      const genre = await model.create({
+        data: { name: name.trim(), slug: finalSlug },
       });
 
       res.status(201).json({
         message: "Tạo thể loại thành công",
-        genre,
+        genre: { ...genre, type },
       });
     } catch (error) {
       console.error("Create genre error:", error);
@@ -1470,7 +1557,7 @@ class AdminController {
   async updateGenre(req, res) {
     try {
       const { id } = req.params;
-      const { name } = req.body;
+      const { name, type } = req.body;
 
       if (!name || name.trim().length === 0) {
         return res.status(400).json({
@@ -1479,34 +1566,36 @@ class AdminController {
         });
       }
 
-      const slug = slugify(name.replace(/[đĐ]/g, (c) => c === 'đ' ? 'd' : 'D'), { lower: true });
+      const slug = slugify(
+        name.replace(/[đĐ]/g, (c) => (c === "đ" ? "d" : "D")),
+        { lower: true },
+      );
 
-      // Check if another genre with same slug exists
-      const existingGenre = await prisma.genre.findFirst({
-        where: {
-          slug,
-          id: { not: id },
-        },
+      // Find genre in the correct table
+      let resolvedType = type && ["TEXT", "AUDIO"].includes(type) ? type : null;
+      if (!resolvedType) {
+        // Auto-detect which table by trying both
+        const inText = await prisma.textGenre.findUnique({ where: { id } });
+        resolvedType = inText ? "TEXT" : "AUDIO";
+      }
+      const model =
+        resolvedType === "AUDIO" ? prisma.audioGenre : prisma.textGenre;
+
+      const updateData = { name: name.trim(), slug };
+
+      // Check slug uniqueness within this table
+      const existingSlug = await model.findFirst({
+        where: { slug, id: { not: id } },
       });
-
-      if (existingGenre) {
-        return res.status(400).json({
-          error: "Conflict",
-          message: "Thể loại với tên này đã tồn tại",
-        });
+      if (existingSlug) {
+        updateData.slug = `${slug}-${Date.now()}`;
       }
 
-      const genre = await prisma.genre.update({
-        where: { id },
-        data: {
-          name: name.trim(),
-          slug,
-        },
-      });
+      const genre = await model.update({ where: { id }, data: updateData });
 
       res.json({
         message: "Cập nhật thể loại thành công",
-        genre,
+        genre: { ...genre, type: resolvedType },
       });
     } catch (error) {
       console.error("Update genre error:", error);
@@ -1529,15 +1618,27 @@ class AdminController {
     try {
       const { id } = req.params;
 
+      // Try text genres first, then audio genres
+      let model = prisma.textGenre;
+      let genreType = "TEXT";
+      const inText = await prisma.textGenre.findUnique({ where: { id } });
+      if (!inText) {
+        const inAudio = await prisma.audioGenre.findUnique({ where: { id } });
+        if (!inAudio) {
+          return res.status(404).json({
+            error: "Not Found",
+            message: "Thể loại không tồn tại",
+          });
+        }
+        model = prisma.audioGenre;
+        genreType = "AUDIO";
+      }
+
       // Check if genre is used by any stories
+      const storyCountField =
+        genreType === "TEXT" ? "textGenres" : "audioGenres";
       const storiesCount = await prisma.story.count({
-        where: {
-          genres: {
-            some: {
-              id,
-            },
-          },
-        },
+        where: { [storyCountField]: { some: { id } } },
       });
 
       if (storiesCount > 0) {
@@ -1547,13 +1648,9 @@ class AdminController {
         });
       }
 
-      await prisma.genre.delete({
-        where: { id },
-      });
+      await model.delete({ where: { id } });
 
-      res.json({
-        message: "Xóa thể loại thành công",
-      });
+      res.json({ message: "Xóa thể loại thành công" });
     } catch (error) {
       console.error("Delete genre error:", error);
 
@@ -1747,39 +1844,41 @@ class AdminController {
   // Sample data creation for development
   async createSampleData(req, res) {
     try {
-      // Create sample genres
-      const genres = await Promise.all([
-        prisma.genre.upsert({
+      // Create sample TEXT genres
+      const textGenres = await Promise.all([
+        prisma.textGenre.upsert({
           where: { slug: "tien-hiep" },
           update: {},
-          create: {
-            name: "Tiên Hiệp",
-            slug: "tien-hiep",
-          },
+          create: { name: "Tiên Hiệp", slug: "tien-hiep" },
         }),
-        prisma.genre.upsert({
+        prisma.textGenre.upsert({
           where: { slug: "huyen-huyen" },
           update: {},
-          create: {
-            name: "Huyền Huyễn",
-            slug: "huyen-huyen",
-          },
+          create: { name: "Huyền Huyễn", slug: "huyen-huyen" },
         }),
-        prisma.genre.upsert({
+        prisma.textGenre.upsert({
           where: { slug: "do-thi" },
           update: {},
-          create: {
-            name: "Đô Thị",
-            slug: "do-thi",
-          },
+          create: { name: "Đô Thị", slug: "do-thi" },
         }),
-        prisma.genre.upsert({
+        prisma.textGenre.upsert({
           where: { slug: "ngon-tinh" },
           update: {},
-          create: {
-            name: "Ngôn Tình",
-            slug: "ngon-tinh",
-          },
+          create: { name: "Ngôn Tình", slug: "ngon-tinh" },
+        }),
+      ]);
+
+      // Create sample AUDIO genres
+      const audioGenres = await Promise.all([
+        prisma.audioGenre.upsert({
+          where: { slug: "tien-hiep" },
+          update: {},
+          create: { name: "Tiên Hiệp", slug: "tien-hiep" },
+        }),
+        prisma.audioGenre.upsert({
+          where: { slug: "huyen-huyen" },
+          update: {},
+          create: { name: "Huyền Huyễn", slug: "huyen-huyen" },
         }),
       ]);
 
@@ -1795,31 +1894,31 @@ class AdminController {
           type: "TEXT",
           status: "PUBLISHED",
           viewCount: 15420,
-          genres: [0, 1], // Will be replaced with actual IDs
+          genreIndexes: [0, 1], // textGenres[0], textGenres[1]
         },
         {
           title: "Tu La Võ Thần",
           slug: "tu-la-vo-than",
           description:
-            "Tiếc thay thiên địa chi gian tu la chi đạo, nhị thập niên tiền nhất trường đại chiến, tu la môn diệt, từ đó thần châu đại địa tái vô tu la...",
+            "Tiếc thay thiên địa chi gian tu la chi đạo, nhị thập niên tiền nhất trường đại chiến, tu la môn diệt...",
           thumbnailUrl:
             "https://img.dtruyen.com/uploads/image/tu-la-vo-than.jpg",
           type: "AUDIO",
           status: "PUBLISHED",
           viewCount: 8930,
-          genres: [0],
+          genreIndexes: [0], // audioGenres[0]
         },
         {
           title: "Ngạo Thế Cửu Trùng Thiên",
           slug: "ngao-the-cuu-trung-thien",
           description:
-            "Cười ngạo giang hồ, ai địch được ta? Thiên địa vô cực, ta tâm vô biên! Tỷ kiếm tại tay, vấn thiên hạ anh hùng ai là địch thủ?",
+            "Cười ngạo giang hồ, ai địch được ta? Thiên địa vô cực, ta tâm vô biên!",
           thumbnailUrl:
             "https://img.dtruyen.com/uploads/image/ngao-the-cuu-trung-thien.jpg",
           type: "TEXT",
           status: "PUBLISHED",
           viewCount: 12560,
-          genres: [0, 1],
+          genreIndexes: [0, 1], // textGenres[0], textGenres[1]
         },
         {
           title: "Thần Y Độc Phi",
@@ -1831,7 +1930,7 @@ class AdminController {
           type: "TEXT",
           status: "PUBLISHED",
           viewCount: 9870,
-          genres: [3],
+          genreIndexes: [3], // textGenres[3]
         },
         {
           title: "Audio: Bách Luyện Thành Thần",
@@ -1843,7 +1942,7 @@ class AdminController {
           type: "AUDIO",
           status: "PUBLISHED",
           viewCount: 11230,
-          genres: [0, 1],
+          genreIndexes: [0, 1], // audioGenres[0], audioGenres[1]
         },
       ];
 
@@ -1854,7 +1953,7 @@ class AdminController {
         create: {
           email: "author@example.com",
           name: "Tác Giả Mẫu",
-          password: "$2b$12$dummy.hash.for.sample.author",
+          passwordHash: null,
           role: "USER",
         },
       });
@@ -1882,13 +1981,16 @@ class AdminController {
           },
         });
 
-        // Connect genres
+        // Connect genres to the correct table based on story type
+        const genrePool = storyData.type === "AUDIO" ? audioGenres : textGenres;
+        const genreField =
+          storyData.type === "AUDIO" ? "audioGenres" : "textGenres";
         await prisma.story.update({
           where: { id: story.id },
           data: {
-            genres: {
-              connect: storyData.genres.map((index) => ({
-                id: genres[index].id,
+            [genreField]: {
+              connect: storyData.genreIndexes.map((index) => ({
+                id: genrePool[index].id,
               })),
             },
           },
@@ -1938,11 +2040,15 @@ class AdminController {
       res.json({
         message: "Đã tạo dữ liệu mẫu thành công",
         data: {
-          genres: genres.length,
+          textGenres: textGenres.length,
+          audioGenres: audioGenres.length,
           stories: createdStories.length,
           chaptersPerStory: "5-25 chương",
         },
       });
+
+      // Generate chapter titles and chapters code above handles everything
+      // ----- END createSampleData -----
     } catch (error) {
       console.error("Create sample data error:", error);
       res.status(500).json({

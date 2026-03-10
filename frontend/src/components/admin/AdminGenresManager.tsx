@@ -9,6 +9,7 @@ interface Genre {
   id: string;
   name: string;
   slug: string;
+  type?: "TEXT" | "AUDIO";
   createdAt: string;
   _count?: {
     stories: number;
@@ -22,7 +23,7 @@ interface PaginationMeta {
   pages: number;
 }
 
-const AdminGenresManager: React.FC = () => {
+const AdminGenresManager: React.FC<{ genreType?: "TEXT" | "AUDIO" }> = ({ genreType }) => {
   const [genres, setGenres] = useState<Genre[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -49,6 +50,7 @@ const AdminGenresManager: React.FC = () => {
         page: pagination.page.toString(),
         limit: pagination.limit.toString(),
         ...(searchTerm && { search: searchTerm }),
+        ...(genreType && { type: genreType }),
       });
 
       const response = await apiClient.get(`/admin/genres?${params}`);
@@ -123,6 +125,7 @@ const AdminGenresManager: React.FC = () => {
     return (
       <AdminGenreForm
         genre={editingGenre || undefined}
+        genreType={genreType}
         onSuccess={handleFormSuccess}
         onCancel={handleFormCancel}
       />

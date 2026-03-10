@@ -76,7 +76,7 @@ export function getBookSchema(story: any, siteUrl: string) {
     name: story.title,
     description: story.description,
     url: `${siteUrl}/stories/${story.slug}`,
-    image: story.coverImage || `${siteUrl}/og-image.svg`,
+    image: story.coverImage || `${siteUrl}/vivutruyenhay_logo.jpg`,
     author: {
       "@type": "Person",
       name: story.author || "Anonymous",
@@ -91,12 +91,12 @@ export function getBookSchema(story: any, siteUrl: string) {
     genre: story.genres?.join(", ") || "Fiction",
     aggregateRating: story.rating
       ? {
-          "@type": "AggregateRating",
-          ratingValue: story.rating.average,
-          reviewCount: story.rating.count,
-          bestRating: 5,
-          worstRating: 1,
-        }
+        "@type": "AggregateRating",
+        ratingValue: story.rating.average,
+        reviewCount: story.rating.count,
+        bestRating: 5,
+        worstRating: 1,
+      }
       : undefined,
   };
 }
@@ -109,7 +109,7 @@ export function getArticleSchema(chapter: any, story: any, siteUrl: string) {
     headline: chapter.title,
     description: story.description,
     url: `${siteUrl}/stories/${story.slug}/${chapter.slug}`,
-    image: story.coverImage || `${siteUrl}/og-image.svg`,
+    image: story.coverImage || `${siteUrl}/vivutruyenhay_logo.jpg`,
     author: {
       "@type": "Person",
       name: story.author || "Anonymous",
@@ -119,7 +119,7 @@ export function getArticleSchema(chapter: any, story: any, siteUrl: string) {
       name: "vivutruyenhay.com",
       logo: {
         "@type": "ImageObject",
-        url: `${siteUrl}/logo.svg`,
+        url: `${siteUrl}/vivutruyenhay_logo.jpg`,
       },
     },
     datePublished: chapter.createdAt,
@@ -145,7 +145,7 @@ export function getAudioBookSchema(story: any, siteUrl: string) {
     name: story.title,
     description: story.description,
     url: `${siteUrl}/stories/${story.slug}`,
-    thumbnail: story.coverImage || `${siteUrl}/og-image.svg`,
+    thumbnail: story.coverImage || `${siteUrl}/vivutruyenhay_logo.jpg`,
     contentUrl: story.audioUrl,
     encodingFormat: "audio/mpeg",
     author: {
@@ -199,16 +199,16 @@ export function getFilmReviewSchema(review: any, siteUrl: string) {
     },
     reviewRating: review.rating
       ? {
-          "@type": "Rating",
-          ratingValue: review.rating,
-          bestRating: 10,
-          worstRating: 0,
-        }
+        "@type": "Rating",
+        ratingValue: review.rating,
+        bestRating: 10,
+        worstRating: 0,
+      }
       : undefined,
     itemReviewed: {
       "@type": "Movie",
       name: review.title,
-      image: review.thumbnailUrl || `${siteUrl}/og-image.svg`,
+      image: review.thumbnailUrl || `${siteUrl}/vivutruyenhay_logo.jpg`,
       genre: review.categories?.map((c: any) => c.name) || [],
       actor: review.actors?.map((a: any) => ({
         "@type": "Person",

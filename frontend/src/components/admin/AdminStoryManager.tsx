@@ -34,7 +34,7 @@ interface PaginationData {
   limit: number;
 }
 
-const AdminStoryManager: React.FC = () => {
+const AdminStoryManager: React.FC<{ storyType?: "TEXT" | "AUDIO" }> = ({ storyType }) => {
   const { t } = useLanguage();
 
   // State management
@@ -74,6 +74,10 @@ const AdminStoryManager: React.FC = () => {
 
       if (sortBy) {
         params.append("sort", sortBy);
+      }
+
+      if (storyType) {
+        params.append("type", storyType);
       }
 
       const response = await apiClient.get(`/admin/stories?${params}`);
@@ -306,8 +310,8 @@ const AdminStoryManager: React.FC = () => {
                   {selectedStatus === "PUBLISHED"
                     ? "✅ Đã xuất bản"
                     : selectedStatus === "DRAFT"
-                    ? "📝 Bản nháp"
-                    : "🙈 Ẩn"}
+                      ? "📝 Bản nháp"
+                      : "🙈 Ẩn"}
                 </span>
               )}
               {sortBy !== "createdAt" && (
@@ -316,8 +320,8 @@ const AdminStoryManager: React.FC = () => {
                   {sortBy === "updatedAt"
                     ? "Cập nhật"
                     : sortBy === "title"
-                    ? "Tên A-Z"
-                    : "Xem nhiều"}
+                      ? "Tên A-Z"
+                      : "Xem nhiều"}
                 </span>
               )}
             </div>
@@ -449,7 +453,14 @@ const AdminStoryManager: React.FC = () => {
           onClose={() => setShowCreateModal(false)}
           title="Create Story"
         >
-          <AdminStoryForm onCloseModal={() => setShowCreateModal(false)} />
+          <AdminStoryForm
+            defaultType={storyType}
+            onCloseModal={() => setShowCreateModal(false)}
+            onSuccess={() => {
+              setShowCreateModal(false);
+              fetchStories(currentPage);
+            }}
+          />
         </Modal>
 
         {/* Edit Story Modal */}

@@ -43,12 +43,12 @@ const FilmReviewsClient: React.FC<FilmReviewsClientProps> = ({
     if (ssrCategories.length === 0) {
       apiClient.get("/film-reviews/categories").then((res) => {
         setCategories(res.data?.data || []);
-      }).catch(() => {});
+      }).catch(() => { });
     }
     if (ssrTags.length === 0) {
       apiClient.get("/film-reviews/tags").then((res) => {
         setTags(res.data?.data || []);
-      }).catch(() => {});
+      }).catch(() => { });
     }
   }, [ssrCategories, ssrTags]);
 
@@ -108,9 +108,8 @@ const FilmReviewsClient: React.FC<FilmReviewsClientProps> = ({
         {[1, 2, 3, 4, 5].map((star) => (
           <svg
             key={star}
-            className={`w-4 h-4 ${
-              star <= stars ? "text-yellow-400" : "text-gray-300 dark:text-gray-600"
-            }`}
+            className={`w-4 h-4 ${star <= stars ? "text-yellow-400" : "text-gray-300 dark:text-gray-600"
+              }`}
             fill="currentColor"
             viewBox="0 0 20 20"
           >
@@ -128,23 +127,33 @@ const FilmReviewsClient: React.FC<FilmReviewsClientProps> = ({
     <div>
       {/* Filters */}
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-4 sm:p-6 mb-8">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {/* Search */}
           <div className="sm:col-span-2 lg:col-span-1">
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Tìm kiếm
             </label>
-            <input
-              type="text"
-              defaultValue={currentSearch}
-              placeholder="Tìm phim..."
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  updateFilters("search", (e.target as HTMLInputElement).value);
-                }
-              }}
-            />
+            <div className="relative">
+              <svg
+                className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+              <input
+                type="text"
+                defaultValue={currentSearch}
+                placeholder="Tìm phim..."
+                className="w-full pl-9 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    updateFilters("search", (e.target as HTMLInputElement).value);
+                  }
+                }}
+              />
+            </div>
           </div>
 
           {/* Category */}
@@ -251,13 +260,13 @@ const FilmReviewsClient: React.FC<FilmReviewsClientProps> = ({
 
       {/* Film Reviews Grid */}
       {loading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {Array.from({ length: 8 }).map((_, i) => (
             <div
               key={i}
               className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden animate-pulse"
             >
-              <div className="h-56 bg-gray-300 dark:bg-gray-700" />
+              <div className="aspect-square bg-gray-300 dark:bg-gray-700" />
               <div className="p-4 space-y-3">
                 <div className="h-5 bg-gray-300 dark:bg-gray-700 rounded w-3/4" />
                 <div className="h-4 bg-gray-300 dark:bg-gray-700 rounded w-1/2" />
@@ -295,7 +304,7 @@ const FilmReviewsClient: React.FC<FilmReviewsClientProps> = ({
                 className="cursor-pointer group bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
               >
                 {/* Thumbnail */}
-                <div className="relative h-56 bg-gray-200 dark:bg-gray-700 overflow-hidden">
+                <div className="relative aspect-square bg-gray-200 dark:bg-gray-700 overflow-hidden">
                   {review.thumbnailUrl ? (
                     <Image
                       src={getMediaUrl(review.thumbnailUrl)}
@@ -404,11 +413,10 @@ const FilmReviewsClient: React.FC<FilmReviewsClientProps> = ({
                       onClick={() =>
                         updateFilters("page", pageNum.toString())
                       }
-                      className={`w-10 h-10 rounded-lg text-sm font-medium transition-colors ${
-                        currentPage === pageNum
-                          ? "bg-blue-600 text-white"
-                          : "bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
-                      }`}
+                      className={`w-10 h-10 rounded-lg text-sm font-medium transition-colors ${currentPage === pageNum
+                        ? "bg-blue-600 text-white"
+                        : "bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                        }`}
                     >
                       {pageNum}
                     </button>

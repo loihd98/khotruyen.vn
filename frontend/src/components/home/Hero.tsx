@@ -10,21 +10,20 @@ const Hero: React.FC = () => {
       <div className="hidden sm:block bg-gradient-to-r from-blue-600 to-purple-600 text-white">
         <div className="container mx-auto px-4 py-16 text-center">
           <h1 className="text-5xl font-bold mb-6">
-            Kho Truyện & Review Phim Số 1 Việt Nam
+            Vivu Truyện Hay – Nghe Truyện Audio, Đọc Truyện Online Và Xem Phim Hay Mỗi Ngày
           </h1>
           <p className="text-xl mb-8 max-w-2xl mx-auto">
-            Đọc và nghe hàng ngàn câu chuyện hay, xem review phim mới nhất từ
-            cộng đồng. Trải nghiệm hoàn toàn miễn phí tại vivutruyenhay.com
+            Vivu Truyện Hay là website tổng hợp truyện audio, truyện đọc online và phim hay với nhiều thể loại hấp dẫn như truyện ma, truyện trinh thám, truyện ngôn tình, truyện đô thị và truyện tình cảm người lớn. Nghe truyện audio chất lượng cao miễn phí tại vivutruyenhay.com
           </p>
           <div className="flex flex-row gap-4 justify-center">
             <Link
-              href="/stories"
+              href="/truyen_text"
               className="bg-white text-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors"
             >
               📚 Khám phá truyện
             </Link>
             <Link
-              href="/stories?type=AUDIO"
+              href="/truyen_audio"
               className="bg-white text-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors"
             >
               🎧 Nghe truyện audio
@@ -67,7 +66,7 @@ const Hero: React.FC = () => {
       <div className="sm:hidden bg-white dark:bg-gray-900 py-2 px-3">
         <div className="flex flex-col gap-2">
           <Link
-            href="/stories"
+            href="/truyen_text"
             className="flex items-center gap-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 px-3 py-2.5 rounded-xl hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors"
           >
             <span className="text-2xl">📚</span>
@@ -80,7 +79,7 @@ const Hero: React.FC = () => {
             </svg>
           </Link>
           <Link
-            href="/stories?type=AUDIO"
+            href="/truyen_audio"
             className="flex items-center gap-3 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 px-3 py-2.5 rounded-xl hover:bg-purple-100 dark:hover:bg-purple-900/40 transition-colors"
           >
             <span className="text-2xl">🎧</span>

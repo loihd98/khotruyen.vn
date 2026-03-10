@@ -16,12 +16,14 @@ interface Genre {
 
 interface AdminGenreFormProps {
   genre?: Genre;
+  genreType?: "TEXT" | "AUDIO";
   onSuccess: () => void;
   onCancel: () => void;
 }
 
 const AdminGenreForm: React.FC<AdminGenreFormProps> = ({
   genre,
+  genreType,
   onSuccess,
   onCancel,
 }) => {
@@ -66,6 +68,7 @@ const AdminGenreForm: React.FC<AdminGenreFormProps> = ({
     try {
       const payload = {
         name: formData.name.trim(),
+        ...(genreType && { type: genreType }),
       };
 
       if (genre) {

@@ -21,6 +21,7 @@ export interface Genre {
   id: string;
   name: string;
   slug: string;
+  type?: "TEXT" | "AUDIO";
   createdAt: string;
   _count?: {
     stories: number;

@@ -19,7 +19,7 @@ app.use(
 app.use(
   cors({
     origin: config.isProduction ? config.corsOrigin : true,
-    credentials: true,   // required for httpOnly cookies
+    credentials: true, // required for httpOnly cookies
   }),
 );
 
@@ -29,7 +29,7 @@ app.use(cookieParser());
 // Rate limiting
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 1000, // limit each IP to 1000 requests per 15 minutes
+  max: 2000, // limit each IP to 2000 requests per 15 minutes
   standardHeaders: true,
   legacyHeaders: false,
   message: {
@@ -42,7 +42,7 @@ app.use("/api/", limiter);
 // Stricter rate limit for auth endpoints
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 100, // 50 attempts per 15 minutes
+  max: 200, // 200 attempts per 15 minutes
   message: {
     error: "Too Many Requests",
     message: "Too many login attempts, please try again later.",

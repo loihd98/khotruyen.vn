@@ -1,6 +1,15 @@
 const prisma = require("../lib/prisma");
 const slugify = require("slugify");
-const validationService = require("../utils/validationService");
+
+// Normalize story: merge textGenres/audioGenres into a single `genres` field
+function normalizeStory(story) {
+  if (!story) return story;
+  story.genres =
+    story.type === "AUDIO" ? story.audioGenres || [] : story.textGenres || [];
+  delete story.textGenres;
+  delete story.audioGenres;
+  return story;
+}
 
 class StoriesController {
   // Get all stories with filters
@@ -22,11 +31,20 @@ class StoriesController {
       }
 
       if (genre) {
-        where.genres = {
-          some: {
-            slug: genre,
-          },
-        };
+        if (type === "AUDIO") {
+          where.audioGenres = { some: { slug: genre } };
+        } else if (type === "TEXT") {
+          where.textGenres = { some: { slug: genre } };
+        } else {
+          where.AND = [
+            {
+              OR: [
+                { textGenres: { some: { slug: genre } } },
+                { audioGenres: { some: { slug: genre } } },
+              ],
+            },
+          ];
+        }
       }
 
       if (search) {
@@ -122,12 +140,11 @@ class StoriesController {
               name: true,
             },
           },
-          genres: {
-            select: {
-              id: true,
-              name: true,
-              slug: true,
-            },
+          textGenres: {
+            select: { id: true, name: true, slug: true },
+          },
+          audioGenres: {
+            select: { id: true, name: true, slug: true },
           },
           affiliate: {
             select: {
@@ -153,7 +170,7 @@ class StoriesController {
       const total = await prisma.story.count({ where });
 
       res.json({
-        data: stories,
+        data: stories.map(normalizeStory),
         pagination: {
           page,
           limit,
@@ -188,12 +205,11 @@ class StoriesController {
               avatar: true,
             },
           },
-          genres: {
-            select: {
-              id: true,
-              name: true,
-              slug: true,
-            },
+          textGenres: {
+            select: { id: true, name: true, slug: true },
+          },
+          audioGenres: {
+            select: { id: true, name: true, slug: true },
           },
           affiliate: {
             select: {
@@ -268,7 +284,7 @@ class StoriesController {
           (chapter.unlockedBy && chapter.unlockedBy.length > 0),
       }));
 
-      res.json({ story });
+      res.json({ story: normalizeStory(story) });
     } catch (error) {
       console.error("Get story error:", error);
       res.status(500).json({
@@ -300,11 +316,11 @@ class StoriesController {
               name: true,
             },
           },
-          genres: {
-            select: {
-              name: true,
-              slug: true,
-            },
+          textGenres: {
+            select: { name: true, slug: true },
+          },
+          audioGenres: {
+            select: { name: true, slug: true },
           },
           affiliate: {
             select: {
@@ -326,7 +342,7 @@ class StoriesController {
         take: limit,
       });
 
-      res.json({ stories });
+      res.json({ stories: stories.map(normalizeStory) });
     } catch (error) {
       console.error("Get trending stories error:", error);
       res.status(500).json({
@@ -358,11 +374,11 @@ class StoriesController {
               name: true,
             },
           },
-          genres: {
-            select: {
-              name: true,
-              slug: true,
-            },
+          textGenres: {
+            select: { name: true, slug: true },
+          },
+          audioGenres: {
+            select: { name: true, slug: true },
           },
           affiliate: {
             select: {
@@ -384,7 +400,7 @@ class StoriesController {
         take: limit,
       });
 
-      res.json({ stories });
+      res.json({ stories: stories.map(normalizeStory) });
     } catch (error) {
       console.error("Get latest stories error:", error);
       res.status(500).json({
@@ -409,32 +425,32 @@ class StoriesController {
           include: {
             story: {
               include: {
-                genres: {
-                  select: {
-                    id: true,
-                  },
-                },
+                textGenres: { select: { id: true } },
+                audioGenres: { select: { id: true } },
               },
             },
           },
         });
 
-        const allGenres = userBookmarks
-          .map((bookmark) => bookmark.story?.genres || [])
-          .flat()
-          .map((genre) => genre.id);
+        const allGenreIds = userBookmarks.flatMap((bookmark) => {
+          const s = bookmark.story;
+          if (!s) return [];
+          return s.type === "AUDIO"
+            ? (s.audioGenres || []).map((g) => g.id)
+            : (s.textGenres || []).map((g) => g.id);
+        });
 
         // Count genre frequency
         const genreCount = {};
-        allGenres.forEach((genreId) => {
-          genreCount[genreId] = (genreCount[genreId] || 0) + 1;
+        allGenreIds.forEach((gId) => {
+          genreCount[gId] = (genreCount[gId] || 0) + 1;
         });
 
         // Get top genres
         genreIds = Object.entries(genreCount)
           .sort(([, a], [, b]) => b - a)
           .slice(0, 3)
-          .map(([genreId]) => genreId);
+          .map(([gId]) => gId);
       }
 
       const where = {
@@ -447,13 +463,10 @@ class StoriesController {
 
       // If we have favorite genres, prioritize them
       if (genreIds.length > 0) {
-        where.genres = {
-          some: {
-            id: {
-              in: genreIds,
-            },
-          },
-        };
+        where.OR = [
+          { textGenres: { some: { id: { in: genreIds } } } },
+          { audioGenres: { some: { id: { in: genreIds } } } },
+        ];
       }
 
       const stories = await prisma.story.findMany({
@@ -464,11 +477,11 @@ class StoriesController {
               name: true,
             },
           },
-          genres: {
-            select: {
-              name: true,
-              slug: true,
-            },
+          textGenres: {
+            select: { name: true, slug: true },
+          },
+          audioGenres: {
+            select: { name: true, slug: true },
           },
           affiliate: {
             select: {
@@ -506,11 +519,11 @@ class StoriesController {
                 name: true,
               },
             },
-            genres: {
-              select: {
-                name: true,
-                slug: true,
-              },
+            textGenres: {
+              select: { name: true, slug: true },
+            },
+            audioGenres: {
+              select: { name: true, slug: true },
             },
             affiliate: {
               select: {
@@ -535,7 +548,7 @@ class StoriesController {
         stories.push(...additionalStories);
       }
 
-      res.json({ stories });
+      res.json({ stories: stories.map(normalizeStory) });
     } catch (error) {
       console.error("Get recommended stories error:", error);
       res.status(500).json({
@@ -545,25 +558,31 @@ class StoriesController {
     }
   }
 
-  // Get all genres
+  // Get all genres (type=TEXT returns text genres, type=AUDIO returns audio genres)
   async getGenres(req, res) {
     try {
-      const genres = await prisma.genre.findMany({
-        include: {
-          _count: {
-            select: {
-              stories: {
-                where: {
-                  status: "PUBLISHED",
-                },
-              },
-            },
+      const { type } = req.query;
+
+      const countWhere = { status: "PUBLISHED" };
+
+      if (type === "AUDIO") {
+        const genres = await prisma.audioGenre.findMany({
+          include: {
+            _count: { select: { stories: { where: countWhere } } },
           },
+          orderBy: { name: "asc" },
+        });
+        return res.json({ genres, genreType: "AUDIO" });
+      }
+
+      // Default: TEXT genres
+      const genres = await prisma.textGenre.findMany({
+        include: {
+          _count: { select: { stories: { where: countWhere } } },
         },
         orderBy: { name: "asc" },
       });
-
-      res.json({ genres });
+      res.json({ genres, genreType: "TEXT" });
     } catch (error) {
       console.error("Get genres error:", error);
       res.status(500).json({
@@ -605,17 +624,12 @@ class StoriesController {
       // Generate slug
       const slug = slugify(title, { lower: true, strict: true });
 
-      // Check if slug exists
-      const existingStory = await prisma.story.findUnique({ where: { slug } });
+      // Check if slug exists and generate unique slug
       let finalSlug = slug;
       let counter = 1;
 
-      while (existingStory) {
+      while (await prisma.story.findUnique({ where: { slug: finalSlug } })) {
         finalSlug = `${slug}-${counter}`;
-        const slugExists = await prisma.story.findUnique({
-          where: { slug: finalSlug },
-        });
-        if (!slugExists) break;
         counter++;
       }
 
@@ -642,41 +656,31 @@ class StoriesController {
       }
 
       if (genreIds && genreIds.length > 0) {
-        storyData.genres = {
-          connect: genreIds.map((id) => ({ id })),
-        };
+        const genreConnect = { connect: genreIds.map((id) => ({ id })) };
+        if (type === "AUDIO") {
+          storyData.audioGenres = genreConnect;
+        } else {
+          storyData.textGenres = genreConnect;
+        }
       }
 
       const story = await prisma.story.create({
         data: storyData,
         include: {
           author: {
-            select: {
-              id: true,
-              name: true,
-              avatar: true,
-            },
+            select: { id: true, name: true, avatar: true },
           },
-          genres: {
-            select: {
-              id: true,
-              name: true,
-              slug: true,
-            },
-          },
+          textGenres: { select: { id: true, name: true, slug: true } },
+          audioGenres: { select: { id: true, name: true, slug: true } },
           affiliate: {
-            select: {
-              id: true,
-              provider: true,
-              label: true,
-            },
+            select: { id: true, provider: true, label: true },
           },
         },
       });
 
       res.status(201).json({
         message: "Tạo truyện thành công",
-        story,
+        story: normalizeStory(story),
       });
     } catch (error) {
       console.error("Create story error:", error);
@@ -755,12 +759,15 @@ class StoriesController {
         updateData.affiliateId = affiliateId;
       }
 
-      // Handle genres update
+      // Handle genres update (routes to correct table based on resolved type)
       if (genreIds) {
-        updateData.genres = {
-          set: [], // Clear existing
-          connect: genreIds.map((id) => ({ id })),
-        };
+        const resolvedType = updateData.type || existingStory.type;
+        const genreSet = { set: genreIds.map((id) => ({ id })) };
+        if (resolvedType === "AUDIO") {
+          updateData.audioGenres = genreSet;
+        } else {
+          updateData.textGenres = genreSet;
+        }
       }
 
       const updatedStory = await prisma.story.update({
@@ -768,32 +775,19 @@ class StoriesController {
         data: updateData,
         include: {
           author: {
-            select: {
-              id: true,
-              name: true,
-              avatar: true,
-            },
+            select: { id: true, name: true, avatar: true },
           },
-          genres: {
-            select: {
-              id: true,
-              name: true,
-              slug: true,
-            },
-          },
+          textGenres: { select: { id: true, name: true, slug: true } },
+          audioGenres: { select: { id: true, name: true, slug: true } },
           affiliate: {
-            select: {
-              id: true,
-              provider: true,
-              label: true,
-            },
+            select: { id: true, provider: true, label: true },
           },
         },
       });
 
       res.json({
         message: "Cập nhật truyện thành công",
-        story: updatedStory,
+        story: normalizeStory(updatedStory),
       });
     } catch (error) {
       console.error("Update story error:", error);
@@ -868,11 +862,20 @@ class StoriesController {
       }
 
       if (genre) {
-        where.genres = {
-          some: {
-            slug: genre,
-          },
-        };
+        if (type === "AUDIO") {
+          where.audioGenres = { some: { slug: genre } };
+        } else if (type === "TEXT") {
+          where.textGenres = { some: { slug: genre } };
+        } else {
+          where.AND = [
+            {
+              OR: [
+                { textGenres: { some: { slug: genre } } },
+                { audioGenres: { some: { slug: genre } } },
+              ],
+            },
+          ];
+        }
       }
 
       if (search) {
@@ -940,12 +943,11 @@ class StoriesController {
                 avatar: true,
               },
             },
-            genres: {
-              select: {
-                id: true,
-                name: true,
-                slug: true,
-              },
+            textGenres: {
+              select: { id: true, name: true, slug: true },
+            },
+            audioGenres: {
+              select: { id: true, name: true, slug: true },
             },
             affiliate: {
               select: {
@@ -975,7 +977,7 @@ class StoriesController {
       res.json({
         message: "Lấy danh sách truyện thành công",
         data: {
-          data: stories,
+          data: stories.map(normalizeStory),
           pagination: {
             page,
             limit,

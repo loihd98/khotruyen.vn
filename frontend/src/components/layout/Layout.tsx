@@ -3,7 +3,6 @@
 import React, { useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "../../store";
-import { setTheme } from "../../store/slices/uiSlice";
 import Navbar from "./Navbar";
 import Footer from "./Footer";
 import AudioPlayer from "../audio/AudioPlayer";
@@ -14,9 +13,8 @@ interface LayoutContentProps {
 
 const LayoutContent: React.FC<LayoutContentProps> = ({ children }) => {
   const dispatch = useDispatch();
-  // Tạm thời dùng default values
-  const theme = "light" as "light" | "dark";
-  const audioPlayerOpen = false;
+  const theme = useSelector((state: RootState) => state.ui.theme);
+  const audioPlayerOpen = useSelector((state: RootState) => state.ui.audioPlayerOpen);
 
   // Apply theme on mount and when it changes
   useEffect(() => {

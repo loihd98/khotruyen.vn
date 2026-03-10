@@ -1,10 +1,10 @@
 {
   "name": "vivutruyenhay.com",
   "short_name": "VivuTruyen",
-  "description": "Vivu truyện hay online miễn phí - Đọc và nghe truyện mọi lúc mọi nơi",
+  "description": "Vivu Truyện Hay là website tổng hợp truyện audio, truyện đọc online và phim hay với nhiều thể loại hấp dẫn. Nghe truyện audio miễn phí, đọc truyện online và xem phim hay mỗi ngày.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
+  "background_color": "#111827",
   "theme_color": "#1e40af",
   "orientation": "portrait-primary",
   "scope": "/",
@@ -13,29 +13,23 @@
   "dir": "ltr",
   "icons": [
     {
-      "src": "/favicon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "/apple-touch-icon.svg",
-      "sizes": "180x180",
-      "type": "image/svg+xml",
+      "src": "/vivutruyenhay_logo.jpg",
+      "sizes": "192x192",
+      "type": "image/jpeg",
       "purpose": "any"
     },
     {
-      "src": "/logo.svg",
+      "src": "/vivutruyenhay_logo.jpg",
       "sizes": "512x512",
-      "type": "image/svg+xml",
+      "type": "image/jpeg",
       "purpose": "any maskable"
     }
   ],
   "screenshots": [
     {
-      "src": "/og-image.svg",
+      "src": "/vivutruyenhay_logo.jpg",
       "sizes": "1200x630",
-      "type": "image/svg+xml",
+      "type": "image/jpeg",
       "form_factor": "wide"
     }
   ],
@@ -44,12 +38,12 @@
       "name": "Truyện chữ",
       "short_name": "Chữ",
       "description": "Xem danh sách truyện chữ",
-      "url": "/stories?type=TEXT",
+      "url": "/truyen_text",
       "icons": [
         {
-          "src": "/favicon.svg",
+          "src": "/vivutruyenhay_logo.jpg",
           "sizes": "96x96",
-          "type": "image/svg+xml"
+          "type": "image/jpeg"
         }
       ]
     },
@@ -57,12 +51,12 @@
       "name": "Truyện audio",
       "short_name": "Audio",
       "description": "Xem danh sách truyện audio",
-      "url": "/stories?type=AUDIO",
+      "url": "/truyen_audio",
       "icons": [
         {
-          "src": "/favicon.svg",
+          "src": "/vivutruyenhay_logo.jpg",
           "sizes": "96x96",
-          "type": "image/svg+xml"
+          "type": "image/jpeg"
         }
       ]
     },
@@ -73,9 +67,9 @@
       "url": "/bookmarks",
       "icons": [
         {
-          "src": "/favicon.svg",
+          "src": "/vivutruyenhay_logo.jpg",
           "sizes": "96x96",
-          "type": "image/svg+xml"
+          "type": "image/jpeg"
         }
       ]
     }

@@ -1,13 +1,11 @@
 "use client";
 
 import React, { useState, useRef, useEffect, useMemo } from "react";
-import { useSelector, useDispatch } from "react-redux";
+import { useDispatch } from "react-redux";
 import { useRouter, usePathname } from "next/navigation";
-import { RootState } from "../../store";
-import { toggleSidebar, toggleTheme } from "../../store/slices/uiSlice";
 import { logoutUser } from "../../store/slices/authSlice";
-import LanguageSelector from "./LanguageSelector";
 import Link from "next/link";
+import Image from "next/image";
 import { AppDispatch } from "../../store";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/hooks/useAuth";
@@ -16,25 +14,20 @@ const Navbar: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const router: any = useRouter();
   const pathName = usePathname();
-  const { t, language } = useLanguage();
-  const [searchQuery, setSearchQuery] = useState("");
-  const [isSearchFocused, setIsSearchFocused] = useState(false);
+  const { t } = useLanguage();
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
 
   const { user, isAuthenticated, isAdmin, isReady } = useAuth();
 
-  const { theme } = useSelector((state: RootState) => state.ui);
-
-  const handleToggleTheme = () => {
-    // Mark that user explicitly chose a theme
-    localStorage.setItem("user_theme_choice", "1");
-    dispatch(toggleTheme());
-  };
-
   const isStoriesPage = useMemo(() => {
-    return pathName?.startsWith("/stories");
+    return (
+      pathName?.startsWith("/stories") ||
+      pathName?.startsWith("/truyen_text") ||
+      pathName?.startsWith("/truyen_audio") ||
+      pathName?.startsWith("/the-loai")
+    );
   }, [pathName]);
 
   // Close user menu when clicking outside
@@ -60,20 +53,6 @@ const Navbar: React.FC = () => {
     router.push("/");
   };
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      router.push(`/stories?search=${encodeURIComponent(searchQuery.trim())}`);
-      setSearchQuery("");
-    }
-  };
-
-  const handleSearchKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
-      handleSearch(e);
-    }
-  };
-
   const handleProfileClick = () => {
     if (isAdmin) {
       router.push("/admin");
@@ -84,7 +63,7 @@ const Navbar: React.FC = () => {
   };
 
   return (
-    <nav className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-50">
+    <nav className={`bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 z-50 ${isMobileMenuOpen ? 'relative' : 'sticky top-0'}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           {/* Left side */}
@@ -94,11 +73,15 @@ const Navbar: React.FC = () => {
               href="/"
               className="flex-shrink-0 flex items-center group"
             >
-              <div className="hidden md:block text-lg font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 dark:from-blue-400 dark:via-purple-400 dark:to-indigo-400 bg-clip-text text-transparent group-hover:scale-105 transition-transform duration-300">
-                <span className="inline-block group-hover:animate-bounce">
-                  📚
-                </span>{" "}
-                vivutruyenhay.com
+              <div className="hidden md:flex items-center text-lg font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 dark:from-blue-400 dark:via-purple-400 dark:to-indigo-400 bg-clip-text text-transparent group-hover:scale-105 transition-transform duration-300">
+                <Image
+                  src="/vivutruyenhay_logo.jpg"
+                  alt="Vivu Truyện Hay"
+                  width={36}
+                  height={36}
+                  className="rounded-lg mr-2"
+                  priority
+                />
               </div>
             </Link>
 
@@ -114,29 +97,11 @@ const Navbar: React.FC = () => {
                 </span>
               </Link>
               <Link
-                href="/stories?type=TEXT"
-                className="relative text-gray-500 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-3 py-2 text-xs font-medium transition-all duration-200 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-md group"
-              >
-                <span className="relative">
-                  {t("nav.stories")}
-                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-600 transition-all duration-200 group-hover:w-full"></span>
-                </span>
-              </Link>
-              <Link
-                href="/stories?type=AUDIO"
+                href="/truyen_audio"
                 className="relative text-gray-500 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-3 py-2 text-xs font-medium transition-all duration-200 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-md group"
               >
                 <span className="relative">
                   {t("nav.audio")}
-                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-600 transition-all duration-200 group-hover:w-full"></span>
-                </span>
-              </Link>
-              <Link
-                href="/genres"
-                className="relative text-gray-500 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-3 py-2 text-xs font-medium transition-all duration-200 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-md group"
-              >
-                <span className="relative">
-                  {t("nav.genres")}
                   <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-600 transition-all duration-200 group-hover:w-full"></span>
                 </span>
               </Link>
@@ -149,88 +114,49 @@ const Navbar: React.FC = () => {
                   <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-600 transition-all duration-200 group-hover:w-full"></span>
                 </span>
               </Link>
+              <Link
+                href="/truyen_text"
+                className="relative text-gray-500 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-3 py-2 text-xs font-medium transition-all duration-200 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-md group"
+              >
+                <span className="relative">
+                  {t("nav.stories")}
+                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-600 transition-all duration-200 group-hover:w-full"></span>
+                </span>
+              </Link>
+              {/* <Link
+                href="/the-loai"
+                className="relative text-gray-500 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-3 py-2 text-xs font-medium transition-all duration-200 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-md group"
+              >
+                <span className="relative">
+                  {t("nav.genres")}
+                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-600 transition-all duration-200 group-hover:w-full"></span>
+                </span>
+              </Link> */}
             </div>
           </div>
 
-          {/* Search bar - Desktop */}
+          {/* Search icon - Desktop */}
           {!isStoriesPage && (
-            <div className=" flex flex-1 justify-center item-center px-2 lg:ml-6 lg:justify-end ">
-              <div className="max-w-lg w-full lg:max-w-xs flex items-center">
-                <label htmlFor="search" className="sr-only">
-                  Tìm kiếm
-                </label>
-                <form onSubmit={handleSearch} className="relative sm:w-full">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <svg
-                      className={`h-5 w-5 transition-colors duration-200 ${
-                        isSearchFocused ? "text-blue-500" : "text-gray-400"
-                      }`}
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                      />
-                    </svg>
-                  </div>
-                  <input
-                    id="search"
-                    name="search"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    onFocus={() => setIsSearchFocused(true)}
-                    onBlur={() => setIsSearchFocused(false)}
-                    onKeyDown={handleSearchKeyDown}
-                    className="block w-full pl-10 pr-12 py-2 border border-gray-300 dark:border-gray-600 rounded-md leading-5 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition-all duration-200"
-                    placeholder={t("nav.search.placeholder")}
-                    // type="search"
+            <div className="hidden lg:flex items-center px-2">
+              <Link
+                href="/truyen_audio"
+                className="p-2 rounded-lg text-gray-400 hover:text-blue-500 dark:hover:text-blue-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-200"
+                title="Tìm kiếm"
+              >
+                <svg
+                  className="h-5 w-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
                   />
-
-                  {searchQuery && (
-                    <button
-                      type="button"
-                      onClick={() => setSearchQuery("")}
-                      className="absolute inset-y-0 right-8 flex items-center pr-1"
-                    >
-                      <svg
-                        className="h-4 w-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M6 18L18 6M6 6l12 12"
-                        />
-                      </svg>
-                    </button>
-                  )}
-                  <button
-                    type="submit"
-                    className="absolute inset-y-0 right-0 flex items-center pr-3"
-                  >
-                    <svg
-                      className="h-4 w-4 text-gray-400 hover:text-blue-500 dark:hover:text-blue-400 transition-colors duration-200"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M13 7l5 5m0 0l-5 5m5-5H6"
-                      />
-                    </svg>
-                  </button>
-                </form>
-              </div>
+                </svg>
+              </Link>
             </div>
           )}
           {/* Logo */}
@@ -238,10 +164,15 @@ const Navbar: React.FC = () => {
             href="/"
             className="flex-shrink-0 flex items-center ml-4 md:ml-0 group"
           >
-            <div className="block sm:hidden text-lg font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 dark:from-blue-400 dark:via-purple-400 dark:to-indigo-400 bg-clip-text text-transparent group-hover:scale-105 transition-transform duration-300">
-              <span className="inline-block group-hover:animate-bounce">
-                📚
-              </span>{" "}
+            <div className="flex sm:hidden items-center text-lg font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 dark:from-blue-400 dark:via-purple-400 dark:to-indigo-400 bg-clip-text text-transparent group-hover:scale-105 transition-transform duration-300">
+              <Image
+                src="/vivutruyenhay_logo.jpg"
+                alt="Vivu Truyện Hay"
+                width={32}
+                height={32}
+                className="rounded-lg mr-2"
+                priority
+              />
               vivutruyenhay.com
             </div>
           </Link>
@@ -249,7 +180,7 @@ const Navbar: React.FC = () => {
           {/* Hamburger button - Mobile only */}
           <div className="flex lg:hidden items-center">
             <button
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              onClick={() => { if (!isMobileMenuOpen) window.scrollTo({ top: 0, behavior: 'instant' }); setIsMobileMenuOpen(!isMobileMenuOpen); }}
               className="p-2 rounded-lg text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200"
               aria-label="Toggle menu"
             >
@@ -267,35 +198,6 @@ const Navbar: React.FC = () => {
 
           {/* Right side - Desktop */}
           <div className="hidden lg:flex items-center space-x-4">
-            {/* Language selector */}
-            <LanguageSelector />
-
-            {/* Theme toggle */}
-            <button
-              onClick={() => handleToggleTheme()}
-              className="group p-3 rounded-xl text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gradient-to-br hover:from-yellow-50 hover:to-orange-50 dark:hover:from-gray-700 dark:hover:to-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300 hover:shadow-lg hover:scale-110 transform"
-            >
-              {theme === "light" ? (
-                <svg
-                  className="h-5 w-5 text-gray-700 dark:text-gray-300 group-hover:text-blue-600 transition-colors duration-300 group-hover:rotate-12 transform"
-                  fill="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-                </svg>
-              ) : (
-                <svg
-                  className="h-5 w-5 text-yellow-500 dark:text-yellow-400 group-hover:text-yellow-400 transition-colors duration-300 group-hover:rotate-180 transform"
-                  fill="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M12 2.25a.75.75 0 01.75.75v2.25a.75.75 0 01-1.5 0V3a.75.75 0 01.75-.75zM7.5 12a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM18.894 6.166a.75.75 0 00-1.06-1.06l-1.591 1.59a.75.75 0 101.06 1.061l1.591-1.59zM21.75 12a.75.75 0 01-.75.75h-2.25a.75.75 0 010-1.5H21a.75.75 0 01.75.75zM17.834 18.894a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 10-1.061 1.06l1.59 1.591zM12 18a.75.75 0 01.75.75V21a.75.75 0 01-1.5 0v-2.25A.75.75 0 0112 18zM7.758 17.303a.75.75 0 00-1.061-1.06l-1.591 1.59a.75.75 0 001.06 1.061l1.591-1.59zM6 12a.75.75 0 01-.75.75H3a.75.75 0 010-1.5h2.25A.75.75 0 016 12zM6.697 7.757a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 00-1.061 1.06l1.59 1.591z"
-                  />
-                </svg>
-              )}
-            </button>
 
             {!isReady ? (
               // Loading state while auth is initializing
@@ -345,9 +247,8 @@ const Navbar: React.FC = () => {
                     )}
 
                     <svg
-                      className={`h-4 w-4 text-gray-500 dark:text-gray-400 transition-transform duration-200 ${
-                        isUserMenuOpen ? "rotate-180" : ""
-                      }`}
+                      className={`h-4 w-4 text-gray-500 dark:text-gray-400 transition-transform duration-200 ${isUserMenuOpen ? "rotate-180" : ""
+                        }`}
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
@@ -522,7 +423,7 @@ const Navbar: React.FC = () => {
               <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-3">Khám phá</p>
               <div className="flex flex-col gap-2">
                 <Link
-                  href="/stories?type=TEXT"
+                  href="/truyen_text"
                   onClick={() => setIsMobileMenuOpen(false)}
                   className="flex items-center gap-3 px-4 py-3 rounded-xl bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors"
                 >
@@ -533,7 +434,7 @@ const Navbar: React.FC = () => {
                   </div>
                 </Link>
                 <Link
-                  href="/stories?type=AUDIO"
+                  href="/truyen_audio"
                   onClick={() => setIsMobileMenuOpen(false)}
                   className="flex items-center gap-3 px-4 py-3 rounded-xl bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300 hover:bg-purple-100 dark:hover:bg-purple-900/40 transition-colors"
                 >
@@ -554,43 +455,16 @@ const Navbar: React.FC = () => {
                     <div className="text-xs text-rose-500 dark:text-rose-400">Đánh giá phim hay</div>
                   </div>
                 </Link>
-              </div>
-            </div>
-
-            {/* Divider */}
-            <div className="border-t border-gray-100 dark:border-gray-700 mx-4 my-2" />
-
-            {/* Other navigation links */}
-            <div className="px-4 pb-2">
-              <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2">Trang</p>
-              <div className="flex flex-col gap-1">
                 <Link
                   href="/"
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                  className="flex items-center gap-3 px-4 py-3 rounded-xl bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors"
                 >
-                  🏠 {t("nav.home")}
-                </Link>
-                <Link
-                  href="/genres"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                >
-                  🏷️ {t("nav.genres")}
-                </Link>
-                <Link
-                  href="/help"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                >
-                  ❓ {t("nav.help")}
-                </Link>
-                <Link
-                  href="/contact"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                >
-                  📧 {t("nav.contact")}
+                  <span className="text-2xl">🏠</span>
+                  <div>
+                    <div className="font-semibold text-sm">Trang chủ</div>
+                    <div className="text-xs text-blue-500 dark:text-blue-400">Về trang chủ</div>
+                  </div>
                 </Link>
               </div>
             </div>
@@ -598,64 +472,55 @@ const Navbar: React.FC = () => {
             {/* Divider */}
             <div className="border-t border-gray-100 dark:border-gray-700 mx-4 my-2" />
 
-            {/* Auth + Theme row */}
-            <div className="px-4 pb-4 flex items-center justify-between gap-2">
-              <div className="flex items-center gap-2">
-                {isReady && isAuthenticated && user ? (
-                  <>
+            {/* Auth row */}
+            <div className="px-4 pb-4 flex items-center gap-2">
+              {isReady && isAuthenticated && user ? (
+                <>
+                  <Link
+                    href="/bookmarks"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="px-3 py-1.5 rounded-full text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
+                  >
+                    🔖 {t("nav.bookmarks")}
+                  </Link>
+                  {isAdmin && (
                     <Link
-                      href="/bookmarks"
+                      href="/admin"
                       onClick={() => setIsMobileMenuOpen(false)}
                       className="px-3 py-1.5 rounded-full text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
                     >
-                      🔖 {t("nav.bookmarks")}
+                      ⚙️ Admin
                     </Link>
-                    {isAdmin && (
-                      <Link
-                        href="/admin"
-                        onClick={() => setIsMobileMenuOpen(false)}
-                        className="px-3 py-1.5 rounded-full text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
-                      >
-                        ⚙️ Admin
-                      </Link>
-                    )}
-                    <button
-                      onClick={() => { handleLogout(); setIsMobileMenuOpen(false); }}
-                      className="px-3 py-1.5 rounded-full text-sm font-medium text-red-500 dark:text-red-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
-                    >
-                      🚪 {t("nav.logout")}
-                    </button>
-                  </>
-                ) : isReady ? (
-                  <>
-                    <Link
-                      href="/auth/login"
-                      onClick={() => setIsMobileMenuOpen(false)}
-                      className="px-3 py-1.5 rounded-full text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
-                    >
-                      🔑 {t("nav.login")}
-                    </Link>
-                    <Link
-                      href="/auth/register"
-                      onClick={() => setIsMobileMenuOpen(false)}
-                      className="px-3 py-1.5 rounded-full text-sm font-medium bg-blue-600 text-white hover:bg-blue-700 transition-colors"
-                    >
-                      ✨ {t("nav.register")}
-                    </Link>
-                  </>
-                ) : null}
-              </div>
-
-              {/* Theme Toggle */}
-              <button
-                onClick={() => handleToggleTheme()}
-                className="p-2 rounded-full text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
-              >
-                {theme === "light" ? `🌙` : `☀️`}
-              </button>
+                  )}
+                  <button
+                    onClick={() => { handleLogout(); setIsMobileMenuOpen(false); }}
+                    className="px-3 py-1.5 rounded-full text-sm font-medium text-red-500 dark:text-red-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                  >
+                    🚪 {t("nav.logout")}
+                  </button>
+                </>
+              ) : isReady ? (
+                <>
+                  <Link
+                    href="/auth/login"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="px-3 py-1.5 rounded-full text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
+                  >
+                    🔑 {t("nav.login")}
+                  </Link>
+                  <Link
+                    href="/auth/register"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="px-3 py-1.5 rounded-full text-sm font-medium bg-blue-600 text-white hover:bg-blue-700 transition-colors"
+                  >
+                    ✨ {t("nav.register")}
+                  </Link>
+                </>
+              ) : null}
             </div>
           </div>
-        )}
+        )
+        }
       </div>
     </nav>
   );

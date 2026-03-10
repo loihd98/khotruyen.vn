@@ -1,7 +1,7 @@
 "use client";
 
-import React from "react";
-import Link from "next/link";
+import React, { useState } from "react";
+import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { Story } from "../../types";
 import { useSelector, useDispatch } from "react-redux";
@@ -11,6 +11,24 @@ import { openAudioPlayer } from "../../store/slices/uiSlice";
 import { AppDispatch } from "../../store";
 import { getMediaUrl } from "../../utils/media";
 import Image from "next/image";
+import apiClient from "@/utils/api";
+
+const POPUP_STORAGE_KEY = 'dailyPopupData';
+const MAX_DAILY_POPUP_SHOWS = 2;
+
+const getPopupData = () => {
+  try {
+    const data = localStorage.getItem(POPUP_STORAGE_KEY);
+    if (!data) return { date: '', count: 0 };
+    const parsed = JSON.parse(data);
+    if (parsed.date !== new Date().toDateString()) return { date: new Date().toDateString(), count: 0 };
+    return parsed;
+  } catch { return { date: new Date().toDateString(), count: 0 }; }
+};
+
+const savePopupData = (count: number) => {
+  try { localStorage.setItem(POPUP_STORAGE_KEY, JSON.stringify({ date: new Date().toDateString(), count })); } catch { }
+};
 interface StoryCardProps {
   story: Story;
   variant?: "default" | "compact" | "featured" | "card";
@@ -28,6 +46,8 @@ const StoryCard: React.FC<StoryCardProps> = ({
   const dispatch = useDispatch<AppDispatch>();
   const { isAuthenticated } = useSelector((state: RootState) => state.auth);
   const { bookmarks } = useSelector((state: RootState) => state.bookmarks);
+  const [affiliatePopupLink, setAffiliatePopupLink] = useState<string | null>(null);
+  const [pendingNavUrl, setPendingNavUrl] = useState<string>("");
 
   const isBookmarked = bookmarks.some(
     (bookmark: any) =>
@@ -44,26 +64,17 @@ const StoryCard: React.FC<StoryCardProps> = ({
       return;
     }
 
-    console.log("Bookmark action:", {
-      isBookmarked,
-      storyId: story.id,
-      bookmarks,
-    });
-
     try {
       if (isBookmarked) {
         const bookmark = bookmarks.find(
           (b: any) =>
             b.story?.id === story.id ||
-            b.storyId === story.id ||
             b.storyId === story.id
         );
-        console.log("Found bookmark to remove:", bookmark);
         if (bookmark) {
           await dispatch(removeBookmark(bookmark.id));
         }
       } else {
-        console.log("Adding bookmark for story:", story.id);
         await dispatch(addBookmark({ storyId: story.id }));
       }
     } catch (error) {
@@ -90,12 +101,42 @@ const StoryCard: React.FC<StoryCardProps> = ({
     }
   };
 
-  const handleCardClick = (e: React.MouseEvent) => {
+  const handleCardClick = async (e: React.MouseEvent) => {
     // Navigate to story page (unless disabled - e.g., already on detail page)
-    // Popup will be shown on story detail page
     if (!disableNavigation) {
-      router.push(`/stories/${story.slug}?from=story-card`);
+      const basePath = story.type === "AUDIO" ? "/truyen_audio" : "/truyen_text";
+      const navUrl = `${basePath}/${story.slug}?from=story-card`;
+
+      // Check if we should show affiliate popup
+      const popupData = getPopupData();
+      if (popupData.count < MAX_DAILY_POPUP_SHOWS) {
+        try {
+          const response = await apiClient.get('/affiliate/public/active?limit=10');
+          if (response.data?.success && response.data?.data?.length > 0) {
+            const link = response.data.data[popupData.count]?.targetUrl || response.data.data[0]?.targetUrl;
+            if (link) {
+              setPendingNavUrl(navUrl);
+              setAffiliatePopupLink(link);
+              return;
+            }
+          }
+        } catch {
+          // API failed, navigate directly
+        }
+      }
+
+      router.push(navUrl);
     }
+  };
+
+  const handleAffiliatePopupClose = () => {
+    const popupData = getPopupData();
+    savePopupData(popupData.count + 1);
+    if (affiliatePopupLink) {
+      window.open(affiliatePopupLink, '_blank', 'noopener,noreferrer');
+    }
+    setAffiliatePopupLink(null);
+    if (pendingNavUrl) router.push(pendingNavUrl);
   };
 
   const renderContent = () => {
@@ -210,7 +251,7 @@ const StoryCard: React.FC<StoryCardProps> = ({
                 <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
                   <button
                     onClick={handlePlayAudio}
-                    className="bg-white bg-opacity-90 hover:bg-opacity-100 rounded-full p-4 transition-all"
+                    className="bg-white/90 dark:bg-gray-700/90 hover:bg-white dark:hover:bg-gray-700 rounded-full p-4 transition-all"
                   >
                     <svg
                       className="w-8 h-8 text-blue-600"
@@ -359,7 +400,7 @@ const StoryCard: React.FC<StoryCardProps> = ({
                   onClick={handleBookmark}
                   className={`absolute top-2 right-2 p-1.5 rounded-full transition-all duration-200 shadow-sm ${isBookmarked
                     ? "bg-yellow-400 text-yellow-900 hover:bg-yellow-300"
-                    : "bg-white/90 text-gray-600 hover:bg-white hover:text-yellow-500"
+                    : "bg-white/90 dark:bg-gray-700/90 text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-700 hover:text-yellow-500"
                     }`}
                 >
                   <svg
@@ -382,7 +423,7 @@ const StoryCard: React.FC<StoryCardProps> = ({
 
             {/* Minimal bottom content */}
             <div className="p-2">
-              <h3 className="text-black pb-2 font-bold">{story?.title}</h3>
+              <h3 className="text-white pb-2 font-bold">{story?.title}</h3>
               {/* Genres */}
               <div className="flex flex-wrap gap-1 mb-2">
                 {story?.genres?.slice(0, 2).map((genre) => (
@@ -453,7 +494,7 @@ const StoryCard: React.FC<StoryCardProps> = ({
                   onClick={handleBookmark}
                   className={`absolute bottom-2 right-2 p-2 rounded-full transition-all duration-200 ${isBookmarked
                     ? "text-yellow-500 bg-yellow-100 dark:bg-yellow-900/50 hover:bg-yellow-200 dark:hover:bg-yellow-900/70"
-                    : "text-gray-600 bg-white bg-opacity-90 hover:bg-opacity-100 hover:text-yellow-500"
+                    : "text-gray-600 dark:text-gray-300 bg-white/90 dark:bg-gray-700/90 hover:bg-white dark:hover:bg-gray-700 hover:text-yellow-500"
                     }`}
                 >
                   <svg
@@ -525,8 +566,54 @@ const StoryCard: React.FC<StoryCardProps> = ({
         );
     }
   };
+  let affiliatePopup = null;
 
-  return renderContent();
+  if (affiliatePopupLink && typeof document !== "undefined") {
+    affiliatePopup = createPortal(
+      <div
+        className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm"
+        onClick={handleAffiliatePopupClose}
+      >
+        <div
+          className="relative bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded-2xl shadow-2xl max-w-xl w-full mx-4 p-8"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {/* glow background */}
+          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-400/20 to-purple-400/20 rounded-full blur-3xl -z-10" />
+          <div className="absolute bottom-0 left-0 w-32 h-32 bg-gradient-to-tr from-pink-400/20 to-orange-400/20 rounded-full blur-3xl -z-10" />
+
+          <div className="relative z-10 text-center">
+            <h2 className="font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent whitespace-nowrap text-[clamp(16px,2.5vw,24px)] mb-10">
+              Một Click Nhỏ – Tiếp Thêm Động Lực Lớn 💙
+            </h2>
+
+            <p className="text-gray-700 dark:text-gray-300 text-sm leading-snug mt-5">
+              Sự ủng hộ của bạn giúp tụi mình có thêm động lực tìm và đăng
+              những bộ truyện, bộ phim hay mỗi ngày.
+            </p>
+
+            <p className="text-gray-700 dark:text-gray-300 text-sm leading-snug mt-6">
+              Cảm ơn vì đã ghé thăm và đồng hành cùng tụi mình!
+            </p>
+
+            <button
+              onClick={handleAffiliatePopupClose}
+              className="w-full max-w-[320px] mt-10 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-3 px-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 active:scale-95"
+            >
+              Bấm để tắt
+            </button>
+          </div>
+        </div>
+      </div>,
+      document.body
+    );
+  }
+  return (
+    <>
+      {affiliatePopup}
+      {renderContent()}
+    </>
+  );
 };
 
 export default StoryCard;

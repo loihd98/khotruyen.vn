@@ -236,7 +236,16 @@ class MediaController {
         });
       }
 
-      const filePath = path.join(config.uploadPath, type, filename);
+      // Prevent path traversal
+      const safeFilename = path.basename(filename);
+      if (safeFilename !== filename || filename.includes('..')) {
+        return res.status(400).json({
+          error: "Bad Request",
+          message: "Tên file không hợp lệ",
+        });
+      }
+
+      const filePath = path.join(config.uploadPath, type, safeFilename);
 
       // Check if file exists
       if (!fs.existsSync(filePath)) {
@@ -274,7 +283,16 @@ class MediaController {
         });
       }
 
-      const filePath = path.join(config.uploadPath, type, filename);
+      // Prevent path traversal
+      const safeFilename = path.basename(filename);
+      if (safeFilename !== filename || filename.includes('..')) {
+        return res.status(400).json({
+          error: "Bad Request",
+          message: "Tên file không hợp lệ",
+        });
+      }
+
+      const filePath = path.join(config.uploadPath, type, safeFilename);
 
       // Check if file exists
       if (!fs.existsSync(filePath)) {

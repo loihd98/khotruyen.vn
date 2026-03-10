@@ -27,8 +27,13 @@ const nextConfig = {
     const apiUrl =
       process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
     const baseUrl = apiUrl.replace("/api", "");
+    const mediaBaseUrl = process.env.MEDIA_URL_INTERNAL || "http://nginx";
 
     return [
+      {
+        source: "/uploads/:path*",
+        destination: `${mediaBaseUrl}/uploads/:path*`,
+      },
       {
         source: "/api/:path*",
         destination: `${apiUrl}/:path*`,

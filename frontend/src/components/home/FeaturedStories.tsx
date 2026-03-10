@@ -39,7 +39,7 @@ const FeaturedStories: React.FC<FeaturedStoriesProps> = ({ type, initialStories 
   const isAudio = type === "AUDIO";
   const title = isAudio ? "Truyện Audio Nổi Bật" : "Truyện Văn Bản Mới Nhất";
   const icon = isAudio ? "🎧" : "📖";
-  const href = isAudio ? "/stories?type=AUDIO" : "/stories?type=TEXT";
+  const href = isAudio ? "/truyen_audio" : "/truyen_text";
   const emptyIcon = isAudio ? "🎧" : "📚";
   const emptyMessage = isAudio ? "Chưa có truyện audio nào." : "Chưa có truyện văn bản nào.";
 

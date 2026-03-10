@@ -129,7 +129,7 @@ const HomepageContent: React.FC<HomepageContentProps> = ({
                             icon="🎧"
                             title="Truyện Audio Nổi Bật"
                             subtitle="Nghe truyện audio mới nhất"
-                            href="/stories?type=AUDIO"
+                            href="/truyen_audio"
                         />
                         {audioStories.length > 0 ? (
                             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -213,7 +213,7 @@ const HomepageContent: React.FC<HomepageContentProps> = ({
                             icon="📖"
                             title="Truyện Văn Bản Mới Nhất"
                             subtitle="Đọc truyện văn bản mới nhất"
-                            href="/stories?type=TEXT"
+                            href="/truyen_text"
                         />
                         {textStories.length > 0 ? (
                             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -243,7 +243,7 @@ const HomepageContent: React.FC<HomepageContentProps> = ({
                                     {trendingStories.slice(0, 6).map((story, index) => (
                                         <Link
                                             key={story.id}
-                                            href={`/stories/${story.slug}`}
+                                            href={`${story.type === "AUDIO" ? "/truyen_audio" : "/truyen_text"}/${story.slug}`}
                                             className="flex gap-3 group"
                                         >
                                             <div className="flex-shrink-0 w-8 h-8 bg-gradient-to-br from-orange-400 to-red-500 rounded-full flex items-center justify-center text-white text-sm font-bold">
@@ -329,22 +329,22 @@ const HomepageContent: React.FC<HomepageContentProps> = ({
                                 📋 Danh mục
                             </h3>
                             <div className="space-y-2">
-                                <Link href="/genres" className="block text-sm text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                                <Link href="/the-loai" className="block text-sm text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
                                     🏷️ Thể loại
                                 </Link>
-                                <Link href="/stories?sort=viewCount" className="block text-sm text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                                <Link href="/truyen_text?sort=viewCount" className="block text-sm text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
                                     👀 Xem nhiều nhất
                                 </Link>
-                                <Link href="/stories?sort=createdAt" className="block text-sm text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                                <Link href="/truyen_text?sort=createdAt" className="block text-sm text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
                                     ❤️ Mới nhất
                                 </Link>
                                 <Link href="/film-reviews" className="block text-sm text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
                                     🎬 Review phim
                                 </Link>
-                                <Link href="/stories?status=COMPLETED" className="block text-sm text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                                <Link href="/truyen_text?status=COMPLETED" className="block text-sm text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
                                     ✅ Truyện hoàn thành
                                 </Link>
-                                <Link href="/stories?status=ONGOING" className="block text-sm text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                                <Link href="/truyen_text?status=ONGOING" className="block text-sm text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
                                     🔄 Đang cập nhật
                                 </Link>
                             </div>

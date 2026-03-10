@@ -1,7 +1,9 @@
 import { ImageResponse } from "next/og";
+import { readFile } from "node:fs/promises";
+import { join } from "node:path";
 
-export const runtime = "edge";
-export const alt = "vivutruyenhay.com";
+export const runtime = "nodejs";
+export const alt = "Vivu Truyện Hay";
 export const size = {
   width: 180,
   height: 180,
@@ -9,23 +11,21 @@ export const size = {
 export const contentType = "image/png";
 
 export default async function Icon() {
+  const logoData = await readFile(join(process.cwd(), "public", "vivutruyenhay_logo.jpg"));
+  const logoBase64 = `data:image/jpeg;base64,${logoData.toString("base64")}`;
+
   return new ImageResponse(
     (
       <div
         style={{
-          fontSize: 80,
-          background: "#1e40af",
           width: "100%",
           height: "100%",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          color: "white",
-          fontWeight: "bold",
-          borderRadius: 40,
         }}
       >
-        KT
+        <img src={logoBase64} width={180} height={180} style={{ objectFit: "cover", borderRadius: 40 }} />
       </div>
     ),
     {

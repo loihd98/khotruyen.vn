@@ -128,19 +128,17 @@ export const authAPI = {
     ),
 
   refreshToken: () =>
-    apiRequest<AuthResponse>(() =>
-      apiClient.post("/auth/refresh"),  // cookie sent automatically
+    apiRequest<AuthResponse>(
+      () => apiClient.post("/auth/refresh"), // cookie sent automatically
     ),
 
   logout: () =>
-    apiRequest<{ message: string }>(() =>
-      apiClient.post("/auth/logout"),   // cookie sent automatically
+    apiRequest<{ message: string }>(
+      () => apiClient.post("/auth/logout"), // cookie sent automatically
     ),
 
   logoutAll: () =>
-    apiRequest<{ message: string }>(() =>
-      apiClient.post("/auth/logout-all"),
-    ),
+    apiRequest<{ message: string }>(() => apiClient.post("/auth/logout-all")),
 
   getProfile: () => apiRequest<User>(() => apiClient.get("/auth/me")),
 
@@ -254,7 +252,7 @@ export const commentsAPI = {
     ),
 
   createComment: (chapterId: string, content: string, parentId?: string) =>
-    apiRequest<{ message: string; data: { comment: Comment } }>(() =>
+    apiRequest<{ comment: Comment }>(() =>
       apiClient.post(`/comments/chapters/${chapterId}/comments`, {
         content,
         parentId,

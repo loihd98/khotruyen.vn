@@ -100,11 +100,15 @@ const AdminDashboard: React.FC = () => {
       case "dashboard":
         return <AdminStats />;
       case "stories":
-        return <AdminStoryManager />;
+        return <AdminStoryManager storyType="TEXT" />;
+      case "audio-stories":
+        return <AdminStoryManager storyType="AUDIO" />;
       case "chapters":
         return <AdminChapterManager />;
       case "genres":
-        return <AdminGenresManager />;
+        return <AdminGenresManager genreType="TEXT" />;
+      case "audio-genres":
+        return <AdminGenresManager genreType="AUDIO" />;
       case "affiliate-links":
         return <AdminAffiliatePage />;
       case "users":

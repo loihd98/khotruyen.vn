@@ -115,7 +115,7 @@ export default function GenresClient({ initialGenres }: GenresClientProps) {
                     <div
                       key={genre.id}
                       onClick={() =>
-                        router.push(`/stories?genre=${genre.slug}`)
+                        router.push(`/the-loai/${genre.slug}`)
                       }
                       className="bg-white dark:bg-gray-800 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 p-6 border border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600 cursor-pointer group transform hover:-translate-y-1"
                       style={{ animationDelay: `${index * 100}ms` }}
@@ -162,7 +162,7 @@ export default function GenresClient({ initialGenres }: GenresClientProps) {
                         <button
                           key={genre.id}
                           onClick={() =>
-                            router.push(`/stories?genre=${genre.slug}`)
+                            router.push(`/the-loai/${genre.slug}`)
                           }
                           className="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-full border border-gray-300 dark:border-gray-600 hover:bg-blue-50 dark:hover:bg-blue-900 hover:border-blue-300 dark:hover:border-blue-600 hover:text-blue-600 dark:hover:text-blue-400 transition-all"
                         >
@@ -184,7 +184,7 @@ export default function GenresClient({ initialGenres }: GenresClientProps) {
                       tôi
                     </p>
                     <button
-                      onClick={() => router.push("/stories")}
+                      onClick={() => router.push("/truyen_text")}
                       className="inline-block bg-white text-blue-600 font-semibold px-8 py-3 rounded-lg hover:bg-gray-100 transition-all duration-300 hover:scale-105 shadow-lg"
                     >
                       📚 Xem Tất Cả Truyện

@@ -51,9 +51,9 @@ export async function generateMetadata({
   const tag = searchParams.tag as string;
   const search = searchParams.search as string;
 
-  let title = "Review Phim - vivutruyenhay.com";
+  let title = "Review Phim - Xem Phim Online Miễn Phí | vivutruyenhay.com";
   let description =
-    "Xem các bài review phim hay nhất. Đánh giá phim, xếp hạng và nhận xét từ cộng đồng.";
+    "Xem phim online miễn phí với nhiều thể loại hấp dẫn như phim hành động, tình cảm, kinh dị và phim mới cập nhật mỗi ngày tại vivutruyenhay.com.";
 
   if (category) {
     title = `Review Phim - ${category} | vivutruyenhay.com`;
@@ -116,8 +116,8 @@ export default async function FilmReviewsPage() {
           </div>
 
           <FilmReviewsClient categories={categories} tags={tags} />
-      </div>
-    </Layout>
+        </div>
+      </Layout>
     </>
   );
 }

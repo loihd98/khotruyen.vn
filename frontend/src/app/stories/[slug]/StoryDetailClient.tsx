@@ -1,14 +1,12 @@
 "use client";
 
-import React, { useState, useEffect, use } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
-  useParams,
   usePathname,
   useRouter,
   useSearchParams,
 } from "next/navigation";
 import Image from "next/image";
-import Link from "next/link";
 import { useSelector } from "react-redux";
 import { RootState } from "../../../store";
 import SimpleAudioPlayer from "../../../components/audio/SimpleAudioPlayer";
@@ -90,9 +88,10 @@ export default function StoryDetailClient({ params, initialStory }: StoryPagePro
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [selectedChapter, setSelectedChapter] = useState<number>(1);
   const [showFullDescription, setShowFullDescription] = useState(false);
-  const [trendingStories, setTrendingStories] = useState<Story[] | any>([]);
+  const [trendingStories, setTrendingStories] = useState<Story[]>([]);
   const [isLoadingTrending, setIsLoadingTrending] = useState(true);
-  const from = searchParams.get("from");
+  // Capture initial 'from' value so affiliate check works even after URL cleanup
+  const initialFrom = useRef(searchParams.get("from"));
 
   const { slug } = params;
 
@@ -105,25 +104,33 @@ export default function StoryDetailClient({ params, initialStory }: StoryPagePro
     }
   }, [slug]);
 
+  // Clean 'from' param from URL on mount (keep URL clean)
   useEffect(() => {
-    if (!from && story?.affiliate?.targetUrl && !isAffiliateCooldown(story.affiliate.targetUrl)) {
+    if (searchParams.get("from")) {
+      const cleanParams = new URLSearchParams(searchParams.toString());
+      cleanParams.delete("from");
+      const qs = cleanParams.toString();
+      router.replace(qs ? `${pathname}?${qs}` : pathname);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (!initialFrom.current && story?.affiliate?.targetUrl && !isAffiliateCooldown(story.affiliate.targetUrl)) {
       markAffiliateShown(story.affiliate.targetUrl);
       window.open(story.affiliate.targetUrl, "_blank", "noopener");
     }
-  }, [from, story?.affiliate?.targetUrl]);
+  }, [story?.affiliate?.targetUrl]);
 
   useEffect(() => {
     const chapterFromUrl = Number(searchParams.get("chapter"));
     if (chapterFromUrl && chapterFromUrl > 0) {
       setSelectedChapter(chapterFromUrl);
     } else {
-      // Nếu không có chapter param, set 1 và update URL
+      // No chapter param — set state to 1 without modifying URL
       setSelectedChapter(1);
-      const params = new URLSearchParams(searchParams.toString());
-      params.set("chapter", "1");
-      router.replace(`${pathname}?${params.toString()}`); // replace để không tạo history mới
     }
-  }, [searchParams, pathname, router]);
+  }, [searchParams]);
 
   const updateUrlChapter = (chapterNumber: number) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -182,7 +189,7 @@ export default function StoryDetailClient({ params, initialStory }: StoryPagePro
         sort: "viewCount",
         limit: 8,
       });
-      setTrendingStories(response.data || []);
+      setTrendingStories((response.data?.data || []) as Story[]);
     } catch (error) {
       console.error("Error fetching trending stories:", error);
     } finally {
@@ -202,14 +209,9 @@ export default function StoryDetailClient({ params, initialStory }: StoryPagePro
     }
 
     try {
-      const response = await apiClient[isBookmarked ? "delete" : "post"](
-        "/bookmarks",
-        {
-          data: JSON.stringify({
-            storyId: story?.id,
-          }) as any,
-        }
-      );
+      const response = isBookmarked
+        ? await apiClient.delete("/bookmarks", { data: { storyId: story?.id } })
+        : await apiClient.post("/bookmarks", { storyId: story?.id });
 
       if (response.data) {
         setIsBookmarked(!isBookmarked);
@@ -280,7 +282,7 @@ export default function StoryDetailClient({ params, initialStory }: StoryPagePro
               <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 animate-pulse">
                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
                   <div className="lg:col-span-1">
-                    <div className="w-full h-80 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+                    <div className="w-full aspect-[3/2] bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
                   </div>
                   <div className="lg:col-span-3">
                     <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded mb-4"></div>
@@ -332,53 +334,23 @@ export default function StoryDetailClient({ params, initialStory }: StoryPagePro
         <div className={`container mx-auto ${!isAudioStory ? 'px-4' : ''} py-8`}>
           <div className="max-w-6xl mx-auto">
             {/* Chapter Content */}
-            {currentChapter && isAudioStory && (
+            {isAudioStory && (
               <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 mb-5">
-                <div className={`${!isAudioStory && 'border-b pb-4'} border-gray-200 dark:border-gray-700  mb-6`}>
+                <div className="border-gray-200 dark:border-gray-700 mb-6">
                   <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                    {!isAudioStory && `Chương ${currentChapter.number}:`} {isAudioStory ? story.title : currentChapter.title}
+                    {story.title}
                   </h2>
-                  {!isAudioStory && <div className="text-sm text-gray-600 dark:text-gray-400 mt-2">
-                    📅{" "}
-                    {new Date(currentChapter.createdAt).toLocaleDateString(
-                      "vi-VN"
-                    )}
-                  </div>}
                 </div>
 
-                {currentChapter.isLocked && !user && !isAudioStory ? (
-                  <div className="text-center py-12">
-                    <div className="text-6xl mb-4">🔒</div>
-                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-                      Chương này cần đăng nhập
-                    </h3>
-                    <p className="text-gray-600 dark:text-gray-400 mb-4">
-                      Vui lòng đăng nhập để đọc chương này
-                    </p>
-                    <button
-                      onClick={() => router.push("/auth/login")}
-                      className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-                    >
-                      Đăng nhập
-                    </button>
-                  </div>
-                ) : (
-                  <div>
-                    <div className="relative w-full h-80 rounded-lg overflow-hidden">
-                      {story.thumbnailUrl ? (
-                        <Image
-                          src={getMediaUrl(story.thumbnailUrl)}
-                          alt={story.title}
-                          fill
-                          className="object-cover"
-                        />
-                      ) : (
-                        <div className="w-full h-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
-                          <span className="text-gray-400 text-lg">📚</span>
-                        </div>
-                      )}
-                    </div>
-                    {isAudioStory && currentChapter.audioUrl ? (
+                <div>
+                    <Image
+                      src={getMediaUrl(story?.thumbnailUrl || "")}
+                      alt={story.title}
+                      width={600}
+                      height={400}
+                      className="w-full h-auto rounded-lg object-contain bg-gray-200 dark:bg-gray-700"
+                    />
+                    {currentChapter?.audioUrl ? (
                       <div className="mb-6 mt-4">
                         <SimpleAudioPlayer
                           src={getMediaUrl(currentChapter.audioUrl)}
@@ -388,159 +360,23 @@ export default function StoryDetailClient({ params, initialStory }: StoryPagePro
                     ) : null}
 
                     {/* Deal Hot Section */}
-                    {story.affiliate?.targetUrl && story.affiliate.targetUrl && (
-                      <a
-                        href={story.affiliate.targetUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
+                    {story.affiliate?.targetUrl && (
+                      <div
+
                         className="block my-6 p-4 bg-gradient-to-r from-orange-50 via-red-50 to-orange-50 dark:from-orange-900/30 dark:via-red-900/30 dark:to-orange-900/30 border-2 border-orange-400 dark:border-orange-600 rounded-xl shadow-xl hover:shadow-2xl transform hover:scale-[1.02] transition-all duration-300"
                       >
-                        <p className=" font-bold items-center flex-wrap">
+                        <p className=" font-bold items-center flex-wrap text-center">
                           <span className="text-2xl animate-bounce">🔥</span>
-                          <span className="text-orange-600 dark:text-orange-400 animate-pulse"> Deal hot {story.affiliate.label}</span>
-                          <span className="underline text-blue-600">:  Nhận ngay quà tặng dành riêng cho bạn</span>
+                          <span className="text-orange-600 dark:text-orange-400 animate-pulse"> Cảm ơn bạn đã ghé thăm Vivu Truyện Hay
+                            Nếu bạn thấy những câu chuyện ở đây thú vị, hãy bấm vào đây để ủng hộ tụi mình nhé. Mỗi lượt click của bạn là một nguồn động lực lớn để website tiếp tục chia sẻ thêm nhiều truyện hay mỗi ngày!</span>
+                          <a href={story.affiliate.targetUrl}
+                            target="_blank"
+                            rel="noopener noreferrer" className="underline text-blue-600 block"> 👉Click giúp tụi mình tại đây</a>
                         </p>
-                      </a>
-                    )}
-
-                    {currentChapter.content && !isAudioStory && (
-                      <div className="prose prose-lg dark:prose-invert max-w-none">
-                        <div
-                          className="text-gray-700 dark:text-gray-300 leading-relaxed"
-                          dangerouslySetInnerHTML={{
-                            __html: currentChapter.content.replace(
-                              /\n/g,
-                              "<br />"
-                            ),
-                          }}
-                        />
                       </div>
                     )}
-                  </div>
-                )}
-                {/* Chapter Navigation */}
-                {story.chapters.length > 0 && !isAudioStory && (
-                  <div className="bg-white dark:bg-gray-800 rounded-lg mt-2 mb-6">
-                    {/* <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
-                      Danh sách chương
-                    </h2> */}
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {/* Chapter selector */}
-                      <div>
-                        <select
-                          value={selectedChapter}
-                          onChange={(e) =>
-                            onSelectChapter(Number(e.target.value))
-                          }
-                          className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
-                        >
-                          {story.chapters.map((chapter) => (
-                            <option key={chapter.id} value={chapter.number}>
-                              Chương {chapter.number}: {chapter.title}
-                              {chapter.isLocked && !user ? " 🔒" : ""}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-
-                      {/* Navigation buttons */}
-                      <div className="flex gap-2">
-                        <button
-                          onClick={handlePrevChapter}
-                          disabled={selectedChapter <= 1}
-                          className=" text-sm sm:text-base flex-1 py-2 px-4 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                        >
-                          ← Chương trước
-                        </button>
-                        <button
-                          onClick={handleNextChapter}
-                          disabled={selectedChapter >= story.chapters.length}
-                          className=" text-sm sm:text-baseflex-1 py-2 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                        >
-                          Chương tiếp →
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Affiliate Link Section */}
-                {/* {currentChapter.affiliate?.isActive && (
-                  <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className="text-blue-600 dark:text-blue-400">
-                        📥
-                      </span>
-                      <h4 className="font-medium text-blue-900 dark:text-blue-200">
-                        Link tải chương này
-                      </h4>
-                    </div>
-                    <p className="text-sm text-blue-700 dark:text-blue-300 mb-3">
-                      {currentChapter.affiliate.label ||
-                        `Tải từ ${currentChapter.affiliate.provider}`}
-                    </p>
-                    <a
-                      href={currentChapter.affiliate.targetUrl}
-                      target="_blank"
-                      rel="noopener "
-                      className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
-                    >
-                      <span>📥</span>
-                      Tải về
-                      <svg
-                        className="w-4 h-4"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                        />
-                      </svg>
-                    </a>
-                  </div>
-                )} */}
-
-                {/* Chapter Navigation Footer */}
-                {/* <div className="flex justify-between items-center mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
-                  <button
-                    onClick={handlePrevChapter}
-                    disabled={selectedChapter <= 1}
-                    className="flex items-center gap-2 py-2 px-4 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                  >
-                    ← Chương trước
-                  </button>
-
-                  <span className="text-sm text-gray-600 dark:text-gray-400">
-                    {selectedChapter} / {story.chapters.length}
-                  </span>
-
-                  <button
-                    onClick={handleNextChapter}
-                    disabled={selectedChapter >= story.chapters.length}
-                    className="flex items-center gap-2 py-2 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                  >
-                    {(() => {
-                      const nextChapter = story.chapters.find(
-                        (c) => c.number === selectedChapter + 1
-                      );
-                      return nextChapter?.affiliate?.isActive ? (
-                        <>
-                          Chương tiếp →
-                          <span className="text-xs bg-yellow-400 text-yellow-900 px-1 rounded">
-                            📥
-                          </span>
-                        </>
-                      ) : (
-                        "Chương tiếp →"
-                      );
-                    })()}
-                  </button>
-                </div> */}
+                </div>
               </div>
             )}
             {/* Story Header */}
@@ -548,16 +384,17 @@ export default function StoryDetailClient({ params, initialStory }: StoryPagePro
               <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
                 {/* Thumbnail */}
                 <div className="lg:col-span-1">
-                  <div className="relative w-full h-80 rounded-lg overflow-hidden">
+                  <div className="w-full rounded-lg overflow-hidden bg-gray-200 dark:bg-gray-700">
                     {story.thumbnailUrl ? (
                       <Image
                         src={getMediaUrl(story.thumbnailUrl)}
                         alt={story.title}
-                        fill
-                        className="object-cover"
+                        width={600}
+                        height={400}
+                        className="w-full h-auto object-contain"
                       />
                     ) : (
-                      <div className="w-full h-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
+                      <div className="w-full aspect-[3/2] flex items-center justify-center">
                         <span className="text-gray-400 text-lg">📚</span>
                       </div>
                     )}
@@ -764,45 +601,7 @@ export default function StoryDetailClient({ params, initialStory }: StoryPagePro
                       </div>
                     )}
 
-                    {/* Affiliate Link Section */}
-                    {/* {currentChapter.affiliate?.isActive && (
-                      <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
-                        <div className="flex items-center gap-2 mb-2">
-                          <span className="text-blue-600 dark:text-blue-400">
-                            📥
-                          </span>
-                          <h4 className="font-medium text-blue-900 dark:text-blue-200">
-                            Link tải chương này
-                          </h4>
-                        </div>
-                        <p className="text-sm text-blue-700 dark:text-blue-300 mb-3">
-                          {currentChapter.affiliate.label ||
-                            `Tải từ ${currentChapter.affiliate.provider}`}
-                        </p>
-                        <a
-                          href={currentChapter.affiliate.targetUrl}
-                          target="_blank"
-                          rel="noopener "
-                          className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
-                        >
-                          <span>📥</span>
-                          Tải về
-                          <svg
-                            className="w-4 h-4"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                            />
-                          </svg>
-                        </a>
-                      </div>
-                    )} */}
+
                   </div>
                 )}
 
@@ -852,7 +651,7 @@ export default function StoryDetailClient({ params, initialStory }: StoryPagePro
               </h3>
 
               {isLoadingTrending ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                   {Array.from({ length: 8 }).map((_, index) => (
                     <div key={index} className="flex flex-col space-y-2">
                       <div className="w-full h-48 bg-gray-300 dark:bg-gray-600 rounded"></div>
@@ -862,7 +661,7 @@ export default function StoryDetailClient({ params, initialStory }: StoryPagePro
                   ))}
                 </div>
               ) : trendingStories.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                   {trendingStories.map((trendingStory: Story, index: number) => (
                     <div
                       key={trendingStory.id}
@@ -879,9 +678,11 @@ export default function StoryDetailClient({ params, initialStory }: StoryPagePro
 
                         {/* Thumbnail */}
                         {trendingStory.thumbnailUrl ? (
-                          <img
+                          <Image
                             src={getMediaUrl(trendingStory.thumbnailUrl)}
                             alt={trendingStory.title}
+                            width={300}
+                            height={200}
                             className="w-full h-48 object-cover rounded-lg mb-3 group-hover:opacity-90 transition-opacity"
                           />
                         ) : (

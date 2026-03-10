@@ -1,7 +1,9 @@
 import { ImageResponse } from "next/og";
+import { readFile } from "node:fs/promises";
+import { join } from "node:path";
 
-export const runtime = "edge";
-export const alt = "vivutruyenhay.com - Đọc truyện online miễn phí";
+export const runtime = "nodejs";
+export const alt = "Vivu Truyện Hay – Nghe Truyện Audio, Đọc Truyện Online Và Xem Phim Hay Mỗi Ngày";
 export const size = {
   width: 1200,
   height: 630,
@@ -9,6 +11,9 @@ export const size = {
 export const contentType = "image/png";
 
 export default async function Image() {
+  const logoData = await readFile(join(process.cwd(), "public", "vivutruyenhay_logo.jpg"));
+  const logoBase64 = `data:image/jpeg;base64,${logoData.toString("base64")}`;
+
   return new ImageResponse(
     (
       <div
@@ -23,41 +28,33 @@ export default async function Image() {
           fontFamily: "sans-serif",
         }}
       >
+        <img src={logoBase64} width={200} height={200} style={{ objectFit: "contain", borderRadius: 30, marginBottom: 30 }} />
         <div
           style={{
-            fontSize: 120,
+            fontSize: 80,
             fontWeight: "bold",
             color: "white",
             marginBottom: 20,
           }}
         >
-          VivuTruyenHay.com
-        </div>
-        <div
-          style={{
-            fontSize: 48,
-            color: "#dbeafe",
-            marginBottom: 30,
-          }}
-        >
-          Đọc truyện online miễn phí
+          Vivu Truyện Hay
         </div>
         <div
           style={{
             fontSize: 36,
-            color: "#bfdbfe",
-            marginBottom: 80,
+            color: "#dbeafe",
+            marginBottom: 20,
           }}
         >
-          Truyện chữ • Truyện audio • Cập nhật liên tục
+          Nghe Truyện Audio • Đọc Truyện Online • Xem Phim Hay
         </div>
         <div
           style={{
             fontSize: 28,
-            color: "#93c5fd",
+            color: "#bfdbfe",
           }}
         >
-          by Evanloi9x
+          vivutruyenhay.com
         </div>
       </div>
     ),

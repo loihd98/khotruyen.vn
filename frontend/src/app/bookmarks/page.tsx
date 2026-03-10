@@ -185,7 +185,7 @@ export default function BookmarksPage() {
                   Hãy khám phá và đánh dấu những truyện bạn yêu thích!
                 </p>
                 <button
-                  onClick={() => router.push("/stories")}
+                  onClick={() => router.push("/truyen_text")}
                   className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                 >
                   Khám phá truyện
@@ -222,11 +222,10 @@ export default function BookmarksPage() {
                         {/* Type Badge */}
                         <div className="absolute top-2 left-2">
                           <span
-                            className={`px-2 py-1 rounded-full text-xs font-medium ${
-                              bookmark?.story?.type === "AUDIO"
+                            className={`px-2 py-1 rounded-full text-xs font-medium ${bookmark?.story?.type === "AUDIO"
                                 ? "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200"
                                 : "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
-                            }`}
+                              }`}
                           >
                             {bookmark?.story?.type === "AUDIO"
                               ? "🎧 Audio"
@@ -330,11 +329,10 @@ export default function BookmarksPage() {
                         <button
                           key={page}
                           onClick={() => handlePageChange(page)}
-                          className={`px-3 py-2 rounded-lg ${
-                            currentPage === page
+                          className={`px-3 py-2 rounded-lg ${currentPage === page
                               ? "bg-blue-600 text-white"
                               : "border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
-                          }`}
+                            }`}
                         >
                           {page}
                         </button>

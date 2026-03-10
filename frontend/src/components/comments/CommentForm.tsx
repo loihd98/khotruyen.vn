@@ -43,8 +43,8 @@ const CommentForm: React.FC<CommentFormProps> = ({
         parentId
       );
 
-      if (response.data?.data?.comment) {
-        onCommentCreated(response.data.data.comment);
+      if (response.data?.comment) {
+        onCommentCreated(response.data.comment);
         setContent("");
         setFocused(false);
       }
@@ -66,9 +66,8 @@ const CommentForm: React.FC<CommentFormProps> = ({
   return (
     <form onSubmit={handleSubmit} className={`comment-form ${className}`}>
       <div
-        className={`bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg ${
-          focused ? "ring-2 ring-blue-500 border-transparent" : ""
-        } transition-all`}
+        className={`bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg ${focused ? "ring-2 ring-blue-500 border-transparent" : ""
+          } transition-all`}
       >
         {/* User avatar and input */}
         <div className="flex gap-3 p-4">
@@ -94,9 +93,8 @@ const CommentForm: React.FC<CommentFormProps> = ({
               onBlur={() => setFocused(false)}
               onKeyDown={handleKeyDown}
               placeholder={placeholder}
-              className={`w-full bg-transparent text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 resize-none border-none outline-none ${
-                compact ? "text-sm" : ""
-              }`}
+              className={`w-full bg-transparent text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 resize-none border-none outline-none ${compact ? "text-sm" : ""
+                }`}
               rows={compact ? 2 : 3}
               maxLength={1000}
               disabled={loading}
@@ -109,9 +107,8 @@ const CommentForm: React.FC<CommentFormProps> = ({
           <div className="flex items-center justify-between px-4 pb-4 pt-0 border-t border-gray-100 dark:border-gray-700">
             <div className="flex items-center gap-4">
               <span
-                className={`text-gray-500 dark:text-gray-400 ${
-                  compact ? "text-xs" : "text-sm"
-                }`}
+                className={`text-gray-500 dark:text-gray-400 ${compact ? "text-xs" : "text-sm"
+                  }`}
               >
                 {content.length}/1000
               </span>
@@ -141,9 +138,8 @@ const CommentForm: React.FC<CommentFormProps> = ({
               <button
                 type="submit"
                 disabled={loading || !content.trim()}
-                className={`flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-lg transition-colors ${
-                  compact ? "text-sm" : ""
-                }`}
+                className={`flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-lg transition-colors ${compact ? "text-sm" : ""
+                  }`}
               >
                 {loading ? (
                   <>

@@ -728,23 +728,112 @@ docker compose -f docker-compose.prod.yml exec backend node src/scripts/seed.js
 
 ---
 
-## 13. Cập Nhật Schema / Migration Không Mất Dữ Liệu
+## 13. Quy Trình Phát Triển Khi Web Đang Chạy
 
-### 13.1 Quy trình an toàn khi thay đổi Prisma schema
+> **Nguyên tắc vàng:** Luôn backup database TRƯỚC khi thay đổi bất cứ thứ gì trên VPS.
 
-Khi bạn sửa file `backend/prisma/schema.prisma` (thêm bảng, thêm cột, đổi relation...), làm theo quy trình sau để **không mất dữ liệu**:
+### 13.1 Kịch bản A: Chỉ thay đổi Frontend (không đụng DB)
 
-**Bước 1: Tạo migration ở local (máy dev)**
+Đây là trường hợp phổ biến nhất — sửa giao diện, thêm trang, fix bug UI. **Web vẫn chạy bình thường** trong lúc deploy.
 
 ```bash
-# Ở máy dev, trong thư mục backend/
-cd backend
-npx prisma migrate dev --name ten_migration_cua_ban
+ssh root@103.199.18.123
+cd /opt/webtruyen
+
+# 1. Pull code mới
+git pull origin master
+
+# 2. Rebuild CHỈ frontend — backend + database + nginx vẫn chạy bình thường
+#    --no-deps: KHÔNG restart các service khác
+docker compose -f docker-compose.prod.yml up -d --build --no-deps frontend
+
+# 3. Đợi frontend build xong (2-5 phút tuỳ VPS)
+#    Kiểm tra tiến trình build:
+docker compose -f docker-compose.prod.yml logs -f frontend --tail=20
+
+# 4. Khi thấy "Ready" hoặc "Listening on port 3000" → xong!
+#    Web tự động dùng bản mới, KHÔNG cần restart nginx.
 ```
 
-Lệnh này tạo file migration SQL trong `prisma/migrations/`. Commit và push lên GitHub.
+**Lưu ý:**
+- Trong lúc frontend đang build (~2-5 phút), web vẫn chạy bản cũ — user không bị ảnh hưởng.
+- Khi build xong, Docker tự thay container mới — user sẽ thấy bản mới khi refresh trang.
+- Nếu build lỗi, container cũ **vẫn chạy** — web không bị sập.
 
-**Bước 2: Deploy migration trên VPS**
+### 13.2 Kịch bản B: Chỉ thay đổi Backend (không đổi schema)
+
+Ví dụ: sửa logic API, thêm route mới, fix bug controller.
+
+```bash
+ssh root@103.199.18.123
+cd /opt/webtruyen
+
+# 1. Pull code mới
+git pull origin master
+
+# 2. Rebuild CHỈ backend
+docker compose -f docker-compose.prod.yml up -d --build --no-deps backend
+
+# 3. Đợi backend khởi động (~10-30 giây)
+sleep 15
+docker compose -f docker-compose.prod.yml ps backend
+# Phải thấy "Up (healthy)"
+```
+
+**Lưu ý:** Trong 10-30 giây backend restart, các API call sẽ trả lỗi 502. User thấy chậm/lỗi tạm thời, sau đó tự hết.
+
+### 13.3 Kịch bản C: Thay đổi Schema / Database (CẦN CẨN THẬN)
+
+Khi bạn sửa `backend/prisma/schema.prisma` — thêm bảng, thêm cột, đổi relation, v.v. Đây là thay đổi **nguy hiểm nhất** vì có thể mất dữ liệu nếu làm sai.
+
+#### Bước 1: Backup database TRƯỚC (bắt buộc!)
+
+```bash
+ssh root@103.199.18.123
+cd /opt/webtruyen
+
+# Backup toàn bộ database
+DATE=$(date +%Y%m%d_%H%M%S)
+docker compose -f docker-compose.prod.yml exec -T postgres \
+  pg_dump -U webtruyen_user web_truyen > backup_before_migration_$DATE.sql
+
+# Xác nhận backup thành công (file phải > 0 bytes)
+ls -lh backup_before_migration_$DATE.sql
+```
+
+#### Bước 2: Tạo migration ở máy dev (KHÔNG làm trên VPS)
+
+```bash
+# Trên máy dev, trong thư mục backend/
+cd backend
+
+# Sửa prisma/schema.prisma theo ý muốn
+# Ví dụ: thêm cột "rating" vào bảng Story
+
+# Tạo migration file
+npx prisma migrate dev --name add_rating_to_story
+```
+
+Lệnh này tạo file SQL trong `prisma/migrations/`. Mở file đó xem SQL thực tế:
+
+```bash
+# Kiểm tra SQL sẽ chạy — ĐỌC KỸ trước khi deploy!
+cat prisma/migrations/20260311_add_rating_to_story/migration.sql
+```
+
+**Checklist trước khi push:**
+- [ ] SQL chỉ có `ALTER TABLE ... ADD COLUMN` (an toàn) hoặc `CREATE TABLE` (an toàn)?
+- [ ] SQL KHÔNG có `DROP TABLE`, `DROP COLUMN`, `TRUNCATE`?
+- [ ] Cột mới có `DEFAULT` value hoặc cho phép `NULL`? (nếu không, migration sẽ lỗi với data cũ)
+
+Commit và push:
+```bash
+git add prisma/
+git commit -m "migration: add rating to story"
+git push origin master
+```
+
+#### Bước 3: Deploy migration trên VPS
 
 ```bash
 ssh root@103.199.18.123
@@ -757,44 +846,98 @@ git pull origin master
 docker compose -f docker-compose.prod.yml exec backend npx prisma migrate deploy
 ```
 
-> **Quan trọng:** Luôn dùng `migrate deploy` trên production, **KHÔNG BAO GIỜ** dùng `migrate dev` hoặc `migrate reset` trên VPS — các lệnh đó sẽ xóa toàn bộ dữ liệu.
+> ⚠️ **QUAN TRỌNG:** Trên VPS luôn dùng `migrate deploy`. **KHÔNG BAO GIỜ** dùng:
+> - `npx prisma migrate dev` → sẽ reset database!
+> - `npx prisma migrate reset` → sẽ XÓA SẠCH toàn bộ dữ liệu!
+> - `npx prisma db push` → bypass migration history, có thể mất data!
 
-**Bước 3: Xác nhận migration thành công**
+#### Bước 4: Rebuild backend để dùng schema mới
+
+```bash
+# Rebuild backend với Prisma client mới
+docker compose -f docker-compose.prod.yml up -d --build --no-deps backend
+
+# Đợi và kiểm tra
+sleep 15
+docker compose -f docker-compose.prod.yml ps
+```
+
+#### Bước 5: Nếu backend code mới cần frontend mới → rebuild cả hai
+
+```bash
+# Nếu frontend cũng có thay đổi liên quan
+docker compose -f docker-compose.prod.yml up -d --build --no-deps frontend
+```
+
+#### Bước 6: Xác nhận migration thành công
 
 ```bash
 # Kiểm tra trạng thái migration
 docker compose -f docker-compose.prod.yml exec backend npx prisma migrate status
 
-# Kiểm tra bảng mới có trong DB
+# Kiểm tra bảng/cột mới có trong DB
 docker compose -f docker-compose.prod.yml exec postgres \
   psql -U webtruyen_user -d web_truyen -c "\dt"
+
+# Kiểm tra cột mới (ví dụ)
+docker compose -f docker-compose.prod.yml exec postgres \
+  psql -U webtruyen_user -d web_truyen -c "\d stories"
+
+# Test API
+curl https://vivutruyenhay.com/api/health
 ```
 
-### 13.2 Rollback migration nếu gặp lỗi
+### 13.4 Rollback nếu migration lỗi
 
-Prisma không có lệnh rollback tự động. Nếu migration lỗi:
+Prisma không có lệnh rollback tự động. Có 2 cách xử lý:
+
+**Cách 1: Sửa bằng SQL thủ công (lỗi nhẹ)**
 
 ```bash
-# 1. Backup DB trước (nếu chưa backup)
-docker compose -f docker-compose.prod.yml exec -T postgres \
-  pg_dump -U webtruyen_user web_truyen > emergency_backup.sql
-
-# 2. Sửa lỗi bằng SQL thủ công
+# Kết nối DB
 docker compose -f docker-compose.prod.yml exec postgres \
   psql -U webtruyen_user -d web_truyen
 
-# Trong psql shell — ví dụ xóa cột vừa thêm sai:
-# ALTER TABLE stories DROP COLUMN IF EXISTS wrong_column;
-# \q
+# Trong psql — ví dụ xóa cột vừa thêm sai:
+ALTER TABLE stories DROP COLUMN IF EXISTS wrong_column;
+\q
 
-# 3. Đánh dấu migration đã resolve
+# Đánh dấu migration đã resolve
 docker compose -f docker-compose.prod.yml exec backend \
-  npx prisma migrate resolve --rolled-back "20260227_ten_migration"
+  npx prisma migrate resolve --rolled-back "20260311_add_rating_to_story"
 ```
+
+**Cách 2: Restore từ backup (lỗi nặng)**
+
+```bash
+# Dừng backend + frontend (giữ database chạy)
+docker compose -f docker-compose.prod.yml stop backend frontend
+
+# Restore database từ backup
+docker compose -f docker-compose.prod.yml exec -T postgres \
+  psql -U webtruyen_user -d web_truyen < backup_before_migration_YYYYMMDD_HHMMSS.sql
+
+# Quay lại code cũ
+git checkout HEAD~1
+docker compose -f docker-compose.prod.yml up -d --build backend frontend
+```
+
+### 13.5 Các loại thay đổi schema và mức độ rủi ro
+
+| Thay đổi | Rủi ro | Lưu ý |
+|----------|--------|-------|
+| Thêm bảng mới (`CREATE TABLE`) | ✅ An toàn | Không ảnh hưởng data cũ |
+| Thêm cột mới cho phép NULL | ✅ An toàn | Data cũ sẽ có `NULL` ở cột mới |
+| Thêm cột mới với DEFAULT | ✅ An toàn | Data cũ tự có giá trị default |
+| Thêm cột NOT NULL, KHÔNG có DEFAULT | ⚠️ Nguy hiểm | Migration sẽ LỖI nếu bảng có data |
+| Xóa cột (`DROP COLUMN`) | ❌ Mất dữ liệu | Dữ liệu cột đó biến mất vĩnh viễn |
+| Xóa bảng (`DROP TABLE`) | ❌ Mất dữ liệu | Toàn bộ bảng biến mất |
+| Đổi tên cột/bảng | ⚠️ Nguy hiểm | Code cũ sẽ lỗi vì tham chiếu tên cũ |
+| Đổi kiểu dữ liệu cột | ⚠️ Nguy hiểm | Có thể lỗi nếu data không convert được |
 
 ---
 
-## 14. Restart Không Ảnh Hưởng Website Đang Chạy
+## 14. Restart & Deploy Không Ảnh Hưởng Website
 
 ### 14.1 Restart từng service (zero-downtime cho người dùng)
 
@@ -814,22 +957,26 @@ docker compose -f docker-compose.prod.yml exec nginx nginx -s reload
 docker compose -f docker-compose.prod.yml restart nginx
 ```
 
-### 14.2 Rebuild & deploy code mới không downtime
+### 14.2 Deploy code mới — Cheat Sheet nhanh
 
 ```bash
 cd /opt/webtruyen
 git pull origin master
 
-# Rebuild từng service một — service khác vẫn chạy
-docker compose -f docker-compose.prod.yml up -d --build --no-deps backend
-# Đợi backend healthy (~30s)
-sleep 30
-
+# Chỉ đổi Frontend:
 docker compose -f docker-compose.prod.yml up -d --build --no-deps frontend
-# Đợi frontend build xong (~2-5 phút)
 
-# Reload Nginx để nhận container mới
-docker compose -f docker-compose.prod.yml exec nginx nginx -s reload
+# Chỉ đổi Backend (không đổi schema):
+docker compose -f docker-compose.prod.yml up -d --build --no-deps backend
+
+# Đổi cả Backend + Frontend:
+docker compose -f docker-compose.prod.yml up -d --build --no-deps backend
+sleep 15
+docker compose -f docker-compose.prod.yml up -d --build --no-deps frontend
+
+# Đổi Backend + Schema (xem mục 13.3 để làm đầy đủ):
+docker compose -f docker-compose.prod.yml exec backend npx prisma migrate deploy
+docker compose -f docker-compose.prod.yml up -d --build --no-deps backend
 ```
 
 > **Flag quan trọng:** `--no-deps` = chỉ rebuild service đó, KHÔNG restart các service phụ thuộc (postgres, nginx...).
@@ -848,6 +995,12 @@ docker system prune -a
 
 # ❌ NGUY HIỂM: migrate reset = xóa sạch database
 npx prisma migrate reset
+
+# ❌ NGUY HIỂM: migrate dev trên VPS = reset database
+npx prisma migrate dev
+
+# ❌ NGUY HIỂM: db push trên VPS = bypass migration, có thể mất data
+npx prisma db push
 ```
 
 ### 14.4 Kiểm tra volume trước khi thao tác
