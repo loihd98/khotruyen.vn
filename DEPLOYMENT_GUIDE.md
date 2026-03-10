@@ -756,6 +756,7 @@ docker compose -f docker-compose.prod.yml logs -f frontend --tail=20
 ```
 
 **Lưu ý:**
+
 - Trong lúc frontend đang build (~2-5 phút), web vẫn chạy bản cũ — user không bị ảnh hưởng.
 - Khi build xong, Docker tự thay container mới — user sẽ thấy bản mới khi refresh trang.
 - Nếu build lỗi, container cũ **vẫn chạy** — web không bị sập.
@@ -822,11 +823,13 @@ cat prisma/migrations/20260311_add_rating_to_story/migration.sql
 ```
 
 **Checklist trước khi push:**
+
 - [ ] SQL chỉ có `ALTER TABLE ... ADD COLUMN` (an toàn) hoặc `CREATE TABLE` (an toàn)?
 - [ ] SQL KHÔNG có `DROP TABLE`, `DROP COLUMN`, `TRUNCATE`?
 - [ ] Cột mới có `DEFAULT` value hoặc cho phép `NULL`? (nếu không, migration sẽ lỗi với data cũ)
 
 Commit và push:
+
 ```bash
 git add prisma/
 git commit -m "migration: add rating to story"
@@ -847,6 +850,7 @@ docker compose -f docker-compose.prod.yml exec backend npx prisma migrate deploy
 ```
 
 > ⚠️ **QUAN TRỌNG:** Trên VPS luôn dùng `migrate deploy`. **KHÔNG BAO GIỜ** dùng:
+>
 > - `npx prisma migrate dev` → sẽ reset database!
 > - `npx prisma migrate reset` → sẽ XÓA SẠCH toàn bộ dữ liệu!
 > - `npx prisma db push` → bypass migration history, có thể mất data!
@@ -924,16 +928,16 @@ docker compose -f docker-compose.prod.yml up -d --build backend frontend
 
 ### 13.5 Các loại thay đổi schema và mức độ rủi ro
 
-| Thay đổi | Rủi ro | Lưu ý |
-|----------|--------|-------|
-| Thêm bảng mới (`CREATE TABLE`) | ✅ An toàn | Không ảnh hưởng data cũ |
-| Thêm cột mới cho phép NULL | ✅ An toàn | Data cũ sẽ có `NULL` ở cột mới |
-| Thêm cột mới với DEFAULT | ✅ An toàn | Data cũ tự có giá trị default |
-| Thêm cột NOT NULL, KHÔNG có DEFAULT | ⚠️ Nguy hiểm | Migration sẽ LỖI nếu bảng có data |
-| Xóa cột (`DROP COLUMN`) | ❌ Mất dữ liệu | Dữ liệu cột đó biến mất vĩnh viễn |
-| Xóa bảng (`DROP TABLE`) | ❌ Mất dữ liệu | Toàn bộ bảng biến mất |
-| Đổi tên cột/bảng | ⚠️ Nguy hiểm | Code cũ sẽ lỗi vì tham chiếu tên cũ |
-| Đổi kiểu dữ liệu cột | ⚠️ Nguy hiểm | Có thể lỗi nếu data không convert được |
+| Thay đổi                            | Rủi ro         | Lưu ý                                  |
+| ----------------------------------- | -------------- | -------------------------------------- |
+| Thêm bảng mới (`CREATE TABLE`)      | ✅ An toàn     | Không ảnh hưởng data cũ                |
+| Thêm cột mới cho phép NULL          | ✅ An toàn     | Data cũ sẽ có `NULL` ở cột mới         |
+| Thêm cột mới với DEFAULT            | ✅ An toàn     | Data cũ tự có giá trị default          |
+| Thêm cột NOT NULL, KHÔNG có DEFAULT | ⚠️ Nguy hiểm   | Migration sẽ LỖI nếu bảng có data      |
+| Xóa cột (`DROP COLUMN`)             | ❌ Mất dữ liệu | Dữ liệu cột đó biến mất vĩnh viễn      |
+| Xóa bảng (`DROP TABLE`)             | ❌ Mất dữ liệu | Toàn bộ bảng biến mất                  |
+| Đổi tên cột/bảng                    | ⚠️ Nguy hiểm   | Code cũ sẽ lỗi vì tham chiếu tên cũ    |
+| Đổi kiểu dữ liệu cột                | ⚠️ Nguy hiểm   | Có thể lỗi nếu data không convert được |
 
 ---
 

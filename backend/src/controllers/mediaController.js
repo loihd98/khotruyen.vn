@@ -238,7 +238,7 @@ class MediaController {
 
       // Prevent path traversal
       const safeFilename = path.basename(filename);
-      if (safeFilename !== filename || filename.includes('..')) {
+      if (safeFilename !== filename || filename.includes("..")) {
         return res.status(400).json({
           error: "Bad Request",
           message: "Tên file không hợp lệ",
@@ -285,7 +285,7 @@ class MediaController {
 
       // Prevent path traversal
       const safeFilename = path.basename(filename);
-      if (safeFilename !== filename || filename.includes('..')) {
+      if (safeFilename !== filename || filename.includes("..")) {
         return res.status(400).json({
           error: "Bad Request",
           message: "Tên file không hợp lệ",

@@ -343,38 +343,38 @@ export default function StoryDetailClient({ params, initialStory }: StoryPagePro
                 </div>
 
                 <div>
-                    <Image
-                      src={getMediaUrl(story?.thumbnailUrl || "")}
-                      alt={story.title}
-                      width={600}
-                      height={400}
-                      className="w-full h-auto rounded-lg object-contain bg-gray-200 dark:bg-gray-700"
-                    />
-                    {currentChapter?.audioUrl ? (
-                      <div className="mb-6 mt-4">
-                        <SimpleAudioPlayer
-                          src={getMediaUrl(currentChapter.audioUrl)}
-                          title={`${story.title} - Chương ${currentChapter.number}`}
-                        />
-                      </div>
-                    ) : null}
+                  <Image
+                    src={getMediaUrl(story?.thumbnailUrl || "")}
+                    alt={story.title}
+                    width={600}
+                    height={400}
+                    className="w-full h-auto rounded-lg object-contain bg-gray-200 dark:bg-gray-700"
+                  />
+                  {currentChapter?.audioUrl ? (
+                    <div className="mb-6 mt-4">
+                      <SimpleAudioPlayer
+                        src={getMediaUrl(currentChapter.audioUrl)}
+                        title={`${story.title} - Chương ${currentChapter.number}`}
+                      />
+                    </div>
+                  ) : null}
 
-                    {/* Deal Hot Section */}
-                    {story.affiliate?.targetUrl && (
-                      <div
+                  {/* Deal Hot Section */}
+                  {story.affiliate?.targetUrl && (
+                    <div
 
-                        className="block my-6 p-4 bg-gradient-to-r from-orange-50 via-red-50 to-orange-50 dark:from-orange-900/30 dark:via-red-900/30 dark:to-orange-900/30 border-2 border-orange-400 dark:border-orange-600 rounded-xl shadow-xl hover:shadow-2xl transform hover:scale-[1.02] transition-all duration-300"
-                      >
-                        <p className=" font-bold items-center flex-wrap text-center">
-                          <span className="text-2xl animate-bounce">🔥</span>
-                          <span className="text-orange-600 dark:text-orange-400 animate-pulse"> Cảm ơn bạn đã ghé thăm Vivu Truyện Hay
-                            Nếu bạn thấy những câu chuyện ở đây thú vị, hãy bấm vào đây để ủng hộ tụi mình nhé. Mỗi lượt click của bạn là một nguồn động lực lớn để website tiếp tục chia sẻ thêm nhiều truyện hay mỗi ngày!</span>
-                          <a href={story.affiliate.targetUrl}
-                            target="_blank"
-                            rel="noopener noreferrer" className="underline text-blue-600 block"> 👉Click giúp tụi mình tại đây</a>
-                        </p>
-                      </div>
-                    )}
+                      className="block my-6 p-4 bg-gradient-to-r from-orange-50 via-red-50 to-orange-50 dark:from-orange-900/30 dark:via-red-900/30 dark:to-orange-900/30 border-2 border-orange-400 dark:border-orange-600 rounded-xl shadow-xl hover:shadow-2xl transform hover:scale-[1.02] transition-all duration-300"
+                    >
+                      <p className=" font-bold items-center flex-wrap text-center">
+                        <span className="text-2xl animate-bounce">🔥</span>
+                        <span className="text-orange-600 dark:text-orange-400 animate-pulse"> Cảm ơn bạn đã ghé thăm Vivu Truyện Hay
+                          Nếu bạn thấy những câu chuyện ở đây thú vị, hãy bấm vào đây để ủng hộ tụi mình nhé. Mỗi lượt click của bạn là một nguồn động lực lớn để website tiếp tục chia sẻ thêm nhiều truyện hay mỗi ngày!</span>
+                        <a href={story.affiliate.targetUrl}
+                          target="_blank"
+                          rel="noopener noreferrer" className="underline text-blue-600 block"> 👉Click giúp tụi mình tại đây</a>
+                      </p>
+                    </div>
+                  )}
 
                 </div>
               </div>

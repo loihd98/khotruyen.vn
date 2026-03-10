@@ -18,9 +18,9 @@ module.exports = {
   // JWT
   jwtSecret: process.env.JWT_SECRET,
   jwtRefreshSecret: process.env.JWT_REFRESH_SECRET,
-  jwtExpiresIn: "15m",           // Short-lived access token
-  jwtRefreshExpiresIn: "7d",     // Refresh token lifetime
-  refreshTokenMaxAgeDays: 7,     // Cookie max-age in days
+  jwtExpiresIn: "15m", // Short-lived access token
+  jwtRefreshExpiresIn: "7d", // Refresh token lifetime
+  refreshTokenMaxAgeDays: 7, // Cookie max-age in days
 
   // OAuth
   google: {
